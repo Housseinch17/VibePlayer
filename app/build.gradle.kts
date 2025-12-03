@@ -2,6 +2,11 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.room)
+    alias(libs.plugins.google.services)
+    alias(libs.plugins.firebase.crashlytics)
 }
 
 android {
@@ -40,21 +45,55 @@ android {
         compose = true
     }
 }
+room {
+    schemaDirectory("$projectDir/schemas")
+}
+
+
 
 dependencies {
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.lifecycle.runtime.ktx)
-    implementation(libs.androidx.activity.compose)
+    //Androidx ktx
+    implementation(libs.bundles.androidx.ktx)
+
     implementation(platform(libs.androidx.compose.bom))
-    implementation(libs.androidx.compose.ui)
-    implementation(libs.androidx.compose.ui.graphics)
-    implementation(libs.androidx.compose.ui.tooling.preview)
-    implementation(libs.androidx.compose.material3)
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
-    androidTestImplementation(libs.androidx.compose.ui.test.junit4)
-    debugImplementation(libs.androidx.compose.ui.tooling)
-    debugImplementation(libs.androidx.compose.ui.test.manifest)
+
+    testImplementation(libs.junit)
+
+    //DataStore
+    implementation(libs.androidx.datastore.preferences)
+
+    //Android test
+    androidTestImplementation(libs.bundles.android.test)
+
+    //Compose debug
+    debugImplementation(libs.bundles.compose.debug)
+
+    //Splash screen
+    implementation(libs.androidx.core.splashscreen)
+
+    //Coil
+    implementation(libs.coil.compose)
+
+    //Kotlin Serialization
+    implementation(libs.kotlinx.serialization.json)
+
+    //Compose all dependencies
+    implementation(libs.bundles.compose)
+
+    //Firebase
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.bundles.firebase)
+
+    //Room
+    implementation(libs.room.runtime)
+    implementation(libs.room.ktx)
+    ksp(libs.room.compiler)
+
+    //Koin
+    implementation(libs.bundles.koin.compose)
+
+    //Timber
+    implementation(libs.timber)
+
 }
