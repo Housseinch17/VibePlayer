@@ -1,4 +1,4 @@
-package com.example.vibeplayer
+package com.example.vibeplayer.app.presentation
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
