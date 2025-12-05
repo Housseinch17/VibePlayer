@@ -7,10 +7,9 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import com.example.vibeplayer.app.presentation.navigation.NavigationRoot
+import com.example.vibeplayer.app.presentation.navigation.NavigationScreens
 import com.example.vibeplayer.core.presentation.designsystem.VibePlayerTheme
 
 class MainActivity : ComponentActivity() {
@@ -20,28 +19,12 @@ class MainActivity : ComponentActivity() {
         setContent {
             VibePlayerTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
+                    NavigationRoot(
+                        modifier = Modifier.fillMaxSize().padding(innerPadding),
+                        startDestination = NavigationScreens.MainPage
                     )
                 }
             }
         }
-    }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    VibePlayerTheme {
-        Greeting("Android")
     }
 }
