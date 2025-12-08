@@ -9,6 +9,7 @@ import org.koin.androidx.viewmodel.dsl.viewModelOf
 import org.koin.dsl.module
 
 val appModule = module{
+    single<Application> { androidApplication() as Application }
 
     single<Context> { androidApplication().applicationContext }
 

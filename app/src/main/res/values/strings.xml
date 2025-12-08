@@ -1,3 +1,14 @@
 <resources>
-    <string name="app_name">Vibe Player</string>
+    <string name="app_name">VibePlayer</string>
+    <string name="logo_image">Logo Image</string>
+    <string name="access_needed_string">VibePlayer needs access to your music files to build\nyour library and play songs</string>
+    <string name="allow_access">Allow Access</string>
+
+    <string name="permission_denied">Permission Denied</string>
+    <string name="dialog_message">VibePlayer needs access to your music files to
+function properly. Without this permission, the app cannot build your music library or play
+songs</string>
+    <string name="ok">OK</string>
+    <string name="try_again">Try Again</string>
+
 </resources>
