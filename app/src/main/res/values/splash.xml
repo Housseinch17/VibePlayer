@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.Splash" parent="Theme.AppCompat.DayNight.NoActionBar">
-        <item name="android:windowBackground">@drawable/splash_screen_drawable</item>
-        <item name="android:theme">@style/Theme.VibePlayer</item>
+    <style name="Theme.Splash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/surface_bg</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/launcher_icon_foreground</item>
+        <item name="postSplashScreenTheme">@style/Theme.VibePlayer</item>
     </style>
 </resources>

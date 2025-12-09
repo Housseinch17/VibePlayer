@@ -7,6 +7,10 @@ import com.example.vibeplayer.R
 
 object VibePlayerIcons {
 
+    val Logo: ImageVector
+    @Composable
+    get() = ImageVector.vectorResource(R.drawable.logo_icon)
+
     val Scan: ImageVector
         @Composable
         get() = ImageVector.vectorResource(R.drawable.scan)

@@ -11,9 +11,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowCompat
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.vibeplayer.app.presentation.navigation.NavigationRoot
 import com.example.vibeplayer.app.presentation.navigation.NavigationScreens
 import com.example.vibeplayer.core.presentation.designsystem.VibePlayerTheme
@@ -41,13 +43,14 @@ class MainActivity : ComponentActivity() {
             VibePlayerTheme {
                 //End SplashScreen visibility
                 mainViewModel.onActions(MainEvents.EndSplashScreenVisibility)
+                val state by mainViewModel.mainState.collectAsStateWithLifecycle()
+                val startDestination =
+                    if (hasGranted) NavigationScreens.MainPage else NavigationScreens.Permission
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
                     containerColor = MaterialTheme.colorScheme.surfaceBG
                 ) { innerPadding ->
-                    val startDestination =
-                        if (hasGranted) NavigationScreens.MainPage else NavigationScreens.Permission
-                    if (!mainViewModel.mainState.value.isSplashVisible) {
+                    if (!state.isSplashVisible) {
                         NavigationRoot(
                             modifier = Modifier
                                 .fillMaxSize()
@@ -60,7 +63,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    internal  val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+    internal val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
         Manifest.permission.READ_MEDIA_AUDIO
     } else {
         Manifest.permission.READ_EXTERNAL_STORAGE

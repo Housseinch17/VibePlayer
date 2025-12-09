@@ -11,10 +11,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -22,17 +22,16 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
+import androidx.lifecycle.Lifecycle
 import com.example.vibeplayer.R
 import com.example.vibeplayer.app.presentation.MainActivity
-import com.example.vibeplayer.core.domain.LifecycleObserver
-import com.example.vibeplayer.core.presentation.designsystem.VibePlayerImages
+import com.example.vibeplayer.core.presentation.designsystem.VibePlayerIcons
 import com.example.vibeplayer.core.presentation.designsystem.bodyMediumRegular
+import com.example.vibeplayer.core.presentation.designsystem.components.VibePLayerLifecycleEventListener
 import com.example.vibeplayer.core.presentation.designsystem.components.VibePlayerDialog
 import com.example.vibeplayer.core.presentation.designsystem.textPrimary
 import com.example.vibeplayer.core.presentation.designsystem.textSecondary
 import com.example.vibeplayer.features.vibePlayer.presentation.designsystem.common.VibePlayerButton
-import kotlinx.coroutines.flow.collectLatest
-import org.koin.compose.koinInject
 
 @Composable
 fun PermissionScreen(
@@ -47,14 +46,15 @@ fun PermissionScreen(
     //permission to request
     val permission = activity.permission
 
-    val lifecycleObserver = koinInject<LifecycleObserver>()
-
-    LaunchedEffect(lifecycleObserver) {
-        lifecycleObserver.isInForeground.collectLatest {
-            val hasGranted = activity.checkMediaPermission()
-            if (hasGranted) {
-                onActions(PermissionActions.NavigateMainPage)
+    VibePLayerLifecycleEventListener { events ->
+        when (events) {
+            Lifecycle.Event.ON_RESUME -> {
+                val hasGranted = activity.checkMediaPermission()
+                if (hasGranted) {
+                    onActions(PermissionActions.NavigateMainPage)
+                }
             }
+            else -> {}
         }
     }
 
@@ -85,9 +85,9 @@ fun PermissionScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Image(
-                modifier = Modifier,
-                painter = VibePlayerImages.LogoImage,
-                contentDescription = stringResource(R.string.logo_image)
+                modifier = Modifier.size(56.dp),
+                imageVector = VibePlayerIcons.Logo,
+                contentDescription = stringResource(R.string.logo_icon)
             )
 
             Text(
