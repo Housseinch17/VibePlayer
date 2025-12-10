@@ -7,11 +7,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import com.example.vibeplayer.core.presentation.designsystem.bodyLargeMedium
-import com.example.vibeplayer.core.presentation.designsystem.bodyMediumRegular
-import com.example.vibeplayer.core.presentation.designsystem.surfaceBG
-import com.example.vibeplayer.core.presentation.designsystem.textPrimary
-import com.example.vibeplayer.core.presentation.designsystem.textSecondary
+import com.example.vibeplayer.core.presentation.designsystem.theme.bodyLargeMedium
+import com.example.vibeplayer.core.presentation.designsystem.theme.bodyMediumRegular
+import com.example.vibeplayer.core.presentation.designsystem.theme.surfaceBG
+import com.example.vibeplayer.core.presentation.designsystem.theme.textPrimary
+import com.example.vibeplayer.core.presentation.designsystem.theme.textSecondary
 
 @Composable
 fun VibePlayerDialog(

@@ -18,8 +18,9 @@ import androidx.core.view.WindowCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.vibeplayer.app.presentation.navigation.NavigationRoot
 import com.example.vibeplayer.app.presentation.navigation.NavigationScreens
-import com.example.vibeplayer.core.presentation.designsystem.VibePlayerTheme
-import com.example.vibeplayer.core.presentation.designsystem.surfaceBG
+import com.example.vibeplayer.core.presentation.designsystem.theme.VibePlayerTheme
+import com.example.vibeplayer.core.presentation.designsystem.theme.surfaceBG
+
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class MainActivity : ComponentActivity() {

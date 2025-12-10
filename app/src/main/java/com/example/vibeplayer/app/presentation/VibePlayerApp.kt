@@ -3,7 +3,10 @@ package com.example.vibeplayer.app.presentation
 import android.app.Application
 import com.example.vibeplayer.BuildConfig
 import com.example.vibeplayer.app.di.appModule
+import com.example.vibeplayer.app.di.coreDataModule
 import com.example.vibeplayer.core.CoreModule.coreModule
+import com.example.vibeplayer.core.database.di.databaseModule
+import com.example.vibeplayer.feature.main.di.mainModule
 import com.example.vibeplayer.features.vibePlayer.presentation.permission.di.PermissionModule.permissionModule
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -13,7 +16,7 @@ import org.koin.android.ext.koin.androidLogger
 import org.koin.core.context.startKoin
 import timber.log.Timber
 
-class Application : Application() {
+class VibePlayerApp : Application() {
     val applicationScope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     override fun onCreate() {
@@ -24,11 +27,14 @@ class Application : Application() {
 
         startKoin {
             androidLogger()
-            androidContext(this@Application)
+            androidContext(this@VibePlayerApp)
             modules(
                 appModule,
                 coreModule,
-                permissionModule
+                permissionModule,
+                mainModule,
+                coreDataModule,
+                databaseModule
             )
         }
     }

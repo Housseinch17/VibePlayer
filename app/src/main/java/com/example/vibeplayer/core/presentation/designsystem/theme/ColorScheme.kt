@@ -1,4 +1,4 @@
-package com.example.vibeplayer.core.presentation.designsystem
+package com.example.vibeplayer.core.presentation.designsystem.theme
 
 import androidx.compose.material3.ColorScheme
 import androidx.compose.runtime.Composable
