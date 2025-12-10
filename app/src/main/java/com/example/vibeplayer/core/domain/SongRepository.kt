@@ -1,4 +1,4 @@
-package com.example.vibeplayer.app.domain
+package com.example.vibeplayer.core.domain
 
 import kotlinx.coroutines.flow.Flow
 

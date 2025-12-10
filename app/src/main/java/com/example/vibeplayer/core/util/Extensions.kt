@@ -1,4 +1,4 @@
-package com.example.vibeplayer.app
+package com.example.vibeplayer.core.util
 
 fun Long.toMinutesSeconds(): String {
     val minutes = this / 1000 / 60

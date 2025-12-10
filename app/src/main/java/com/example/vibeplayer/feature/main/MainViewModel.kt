@@ -2,8 +2,8 @@ package com.example.vibeplayer.feature.main
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.vibeplayer.app.domain.Result
-import com.example.vibeplayer.app.domain.SongRepository
+import com.example.vibeplayer.core.domain.Result
+import com.example.vibeplayer.core.domain.SongRepository
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine

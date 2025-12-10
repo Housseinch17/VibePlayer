@@ -3,7 +3,7 @@ package com.example.vibeplayer.app.presentation
 import android.app.Application
 import com.example.vibeplayer.BuildConfig
 import com.example.vibeplayer.app.di.appModule
-import com.example.vibeplayer.app.di.coreDataModule
+import com.example.vibeplayer.core.di.coreDataModule
 import com.example.vibeplayer.core.CoreModule.coreModule
 import com.example.vibeplayer.core.database.di.databaseModule
 import com.example.vibeplayer.feature.main.di.mainModule

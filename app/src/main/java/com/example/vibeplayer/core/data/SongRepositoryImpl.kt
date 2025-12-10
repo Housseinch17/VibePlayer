@@ -1,12 +1,12 @@
-package com.example.vibeplayer.app.data
+package com.example.vibeplayer.core.data
 
 import android.content.Context
 import android.media.MediaMetadataRetriever
 import android.os.Build
 import android.provider.MediaStore
-import com.example.vibeplayer.app.domain.Result
-import com.example.vibeplayer.app.domain.Song
-import com.example.vibeplayer.app.domain.SongRepository
+import com.example.vibeplayer.core.domain.Result
+import com.example.vibeplayer.core.domain.Song
+import com.example.vibeplayer.core.domain.SongRepository
 import com.example.vibeplayer.core.database.SongDao
 import com.example.vibeplayer.core.database.toDomainModel
 import com.example.vibeplayer.core.database.toEntity

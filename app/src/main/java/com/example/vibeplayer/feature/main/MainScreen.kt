@@ -25,7 +25,7 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.vibeplayer.app.domain.Song
+import com.example.vibeplayer.core.domain.Song
 import com.example.vibeplayer.core.presentation.designsystem.buttons.VibePlayerPrimaryButton
 import com.example.vibeplayer.core.presentation.designsystem.theme.SurfaceOutline
 import com.example.vibeplayer.core.presentation.designsystem.theme.VibePlayerImages.RadarImage

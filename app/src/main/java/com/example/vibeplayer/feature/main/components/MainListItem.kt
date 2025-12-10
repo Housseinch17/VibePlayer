@@ -21,9 +21,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.example.vibeplayer.R
-import com.example.vibeplayer.app.domain.Song
-import com.example.vibeplayer.app.toMinutesSeconds
+import com.example.vibeplayer.core.domain.Song
+import com.example.vibeplayer.core.util.toMinutesSeconds
 import com.example.vibeplayer.core.presentation.designsystem.theme.VibePlayerImages.SongImageDefault
 import com.example.vibeplayer.core.presentation.designsystem.theme.VibePlayerTheme
 import com.example.vibeplayer.core.presentation.designsystem.theme.bodyMediumRegular
