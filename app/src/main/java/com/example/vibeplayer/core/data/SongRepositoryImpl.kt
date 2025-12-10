@@ -4,27 +4,46 @@ import android.content.Context
 import android.media.MediaMetadataRetriever
 import android.os.Build
 import android.provider.MediaStore
-import com.example.vibeplayer.core.domain.Result
-import com.example.vibeplayer.core.domain.Song
-import com.example.vibeplayer.core.domain.SongRepository
 import com.example.vibeplayer.core.database.SongDao
 import com.example.vibeplayer.core.database.toDomainModel
 import com.example.vibeplayer.core.database.toEntity
+import com.example.vibeplayer.core.domain.Result
+import com.example.vibeplayer.core.domain.Song
+import com.example.vibeplayer.core.domain.SongRepository
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
+import java.io.File
 
 class SongRepositoryImpl(
     private val context: Context,
     private val songDao: SongDao
 ) : SongRepository {
 
+    private val repositoryScope = CoroutineScope(Dispatchers.IO)
+
+    init {
+        cleanUpRemovedSongs()
+    }
 
     override fun getSongs(): Flow<List<Song>> {
         return songDao.getSongs().map { it.toDomainModel() }
+    }
+
+    private fun cleanUpRemovedSongs() {
+        repositoryScope.launch {
+            val songs = songDao.getSongs().first()
+            songs.map { songEntity ->
+                if (!File(songEntity.filePath).exists()) {
+                    songDao.removeSong(songEntity)
+                }
+            }
+        }
     }
 
     override fun syncSongsIfEmpty(): Flow<Result<Unit>> = flow {
@@ -46,7 +65,7 @@ class SongRepositoryImpl(
         }
     }.flowOn(Dispatchers.IO)
 
-    fun fetchSongs(): List<Song> {
+    private fun fetchSongs(): List<Song> {
         val songs = mutableListOf<Song>()
 
         val collection = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
