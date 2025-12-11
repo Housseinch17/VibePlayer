@@ -47,10 +47,6 @@ object VibePlayerIcons {
         @Composable
         get() = ImageVector.Companion.vectorResource(R.drawable.loader)
 
-    val Fab: ImageVector
-        @Composable
-        get() = ImageVector.Companion.vectorResource(R.drawable.fab)
-
     val SelectedRadioButton: ImageVector
         @Composable
         get() = ImageVector.Companion.vectorResource(R.drawable.radio_button_selected)
