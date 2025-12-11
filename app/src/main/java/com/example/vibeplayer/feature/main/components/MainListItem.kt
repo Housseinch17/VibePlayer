@@ -22,11 +22,11 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.vibeplayer.core.domain.Song
-import com.example.vibeplayer.core.util.toMinutesSeconds
 import com.example.vibeplayer.core.presentation.designsystem.theme.VibePlayerImages.SongImageDefault
 import com.example.vibeplayer.core.presentation.designsystem.theme.VibePlayerTheme
 import com.example.vibeplayer.core.presentation.designsystem.theme.bodyMediumRegular
-import com.example.vibeplayer.feature.main.dummySongs
+import com.example.vibeplayer.core.util.toMinutesSeconds
+import com.example.vibeplayer.main.PreviewDataSource
 
 @Composable
 fun MainListItem(
@@ -81,6 +81,6 @@ fun MainListItem(
 @Composable
 private fun MainListItemPreview() {
     VibePlayerTheme {
-        MainListItem(dummySongs[0])
+        MainListItem(PreviewDataSource.previewSongList[0])
     }
 }
