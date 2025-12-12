@@ -25,13 +25,13 @@ import androidx.core.app.ActivityCompat
 import androidx.lifecycle.Lifecycle
 import com.example.vibeplayer.R
 import com.example.vibeplayer.app.presentation.MainActivity
-import com.example.vibeplayer.core.presentation.designsystem.VibePlayerIcons
-import com.example.vibeplayer.core.presentation.designsystem.bodyMediumRegular
+import com.example.vibeplayer.core.presentation.designsystem.buttons.VibePlayerPrimaryButton
 import com.example.vibeplayer.core.presentation.designsystem.components.VibePLayerLifecycleEventListener
 import com.example.vibeplayer.core.presentation.designsystem.components.VibePlayerDialog
-import com.example.vibeplayer.core.presentation.designsystem.textPrimary
-import com.example.vibeplayer.core.presentation.designsystem.textSecondary
-import com.example.vibeplayer.features.vibePlayer.presentation.designsystem.common.VibePlayerButton
+import com.example.vibeplayer.core.presentation.designsystem.theme.VibePlayerIcons
+import com.example.vibeplayer.core.presentation.designsystem.theme.bodyMediumRegular
+import com.example.vibeplayer.core.presentation.designsystem.theme.textPrimary
+import com.example.vibeplayer.core.presentation.designsystem.theme.textSecondary
 
 @Composable
 fun PermissionScreen(
@@ -107,13 +107,11 @@ fun PermissionScreen(
                 )
             )
 
-            VibePlayerButton(
-                modifier = Modifier.padding(top = 20.dp),
-                onClick = {
-                    permissionLauncher.launch(permission)
-                },
-                buttonText = stringResource(R.string.allow_access)
-            )
+            VibePlayerPrimaryButton (
+                text = stringResource(R.string.allow_access),
+            ) {
+                permissionLauncher.launch(permission)
+            }
         }
         if (permissionUiState.showDialog) {
             VibePlayerDialog(

@@ -15,8 +15,9 @@ import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDe
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
-import com.example.vibeplayer.core.presentation.designsystem.textPrimary
+import com.example.vibeplayer.core.presentation.designsystem.theme.textPrimary
 import com.example.vibeplayer.core.presentation.ui.ObserveAsEvents
+import com.example.vibeplayer.feature.main.MainScreenRoot
 import com.example.vibeplayer.features.vibePlayer.presentation.permission.presentation.PermissionEvents
 import com.example.vibeplayer.features.vibePlayer.presentation.permission.presentation.PermissionScreen
 import com.example.vibeplayer.features.vibePlayer.presentation.permission.presentation.PermissionViewModel
@@ -63,17 +64,7 @@ fun NavigationRoot(
                 }
 
                 NavigationScreens.MainPage -> NavEntry(key) {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "This is MainPage",
-                            style = MaterialTheme.typography.titleLarge.copy(
-                                color = MaterialTheme.colorScheme.textPrimary
-                            )
-                        )
-                    }
+                    MainScreenRoot()
                 }
 
                 NavigationScreens.NowPlaying -> NavEntry(key) {

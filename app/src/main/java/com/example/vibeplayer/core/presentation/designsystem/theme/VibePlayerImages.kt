@@ -1,4 +1,4 @@
-package com.example.vibeplayer.core.presentation.designsystem
+package com.example.vibeplayer.core.presentation.designsystem.theme
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.painter.Painter
@@ -14,10 +14,6 @@ object VibePlayerImages {
     val RadarImage: Painter
         @Composable
         get() = painterResource(R.drawable.radar_img)
-
-    val SongImage: Painter
-        @Composable
-        get() = painterResource(R.drawable.song_img)
 
     val SongImageDefault: Painter
         @Composable
