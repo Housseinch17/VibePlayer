@@ -1,4 +1,4 @@
-package com.example.vibeplayer.core.presentation.designsystem
+package com.example.vibeplayer.core.presentation.designsystem.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
@@ -29,11 +29,20 @@ val Typography = Typography(
         fontWeight = FontWeight.Medium,
         fontSize = 24.sp,
         lineHeight = 28.sp,
+        color = TextPrimary
     ),
     titleMedium = TextStyle(
         fontFamily = hostGroteskFamily,
         fontWeight = FontWeight.SemiBold,
         fontSize = 20.sp,
         lineHeight = 24.sp,
+        color = TextPrimary
     ),
+    bodyLarge = TextStyle(
+        fontFamily = hostGroteskFamily,
+        fontWeight = FontWeight.Medium,
+        fontSize = 16.sp,
+        lineHeight = 22.sp,
+        color = TextPrimary
+    )
 )

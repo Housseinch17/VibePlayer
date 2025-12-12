@@ -1,4 +1,4 @@
-package com.example.vibeplayer.core.presentation.designsystem
+package com.example.vibeplayer.core.presentation.designsystem.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.runtime.Composable
@@ -13,6 +13,7 @@ val Typography.bodyLargeRegular: TextStyle
         fontWeight = FontWeight.Normal,
         fontSize = 16.sp,
         lineHeight = 22.sp,
+        color = TextSecondary
     )
 
 val Typography.bodyLargeMedium: TextStyle
@@ -22,6 +23,7 @@ val Typography.bodyLargeMedium: TextStyle
         fontWeight = FontWeight.Medium,
         fontSize = 16.sp,
         lineHeight = 22.sp,
+        color = TextSecondary
     )
 
 val Typography.bodyMediumRegular: TextStyle
@@ -30,5 +32,6 @@ val Typography.bodyMediumRegular: TextStyle
         fontFamily = hostGroteskFamily,
         fontWeight = FontWeight.Normal,
         fontSize = 14.sp,
-        lineHeight = 18.sp
+        lineHeight = 18.sp,
+        color = TextSecondary
     )
