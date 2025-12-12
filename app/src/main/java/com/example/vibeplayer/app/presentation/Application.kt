@@ -4,6 +4,7 @@ import android.app.Application
 import com.example.vibeplayer.BuildConfig
 import com.example.vibeplayer.app.di.appModule
 import com.example.vibeplayer.core.CoreModule.coreModule
+import com.example.vibeplayer.features.vibePlayer.presentation.mainpage.di.MainPageModule.mainPageModule
 import com.example.vibeplayer.features.vibePlayer.presentation.permission.di.PermissionModule.permissionModule
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -28,7 +29,8 @@ class Application : Application() {
             modules(
                 appModule,
                 coreModule,
-                permissionModule
+                permissionModule,
+                mainPageModule,
             )
         }
     }

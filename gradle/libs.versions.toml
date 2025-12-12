@@ -24,6 +24,8 @@ datastorePreferences = "1.1.1"
 firebaseBom = "34.1.0"
 google-services = "4.4.3"
 firebase-crashlytics = "3.0.6"
+kotlinxCoroutines = "1.10.2"
+animationCore = "1.10.0"
 
 
 
@@ -50,12 +52,13 @@ kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serializa
 androidx-lifecycle-process = { module = "androidx.lifecycle:lifecycle-process", version.ref = "lifecycleProcess" }
 
 androidx-navigation3-runtime = { group = "androidx.navigation3", name = "navigation3-runtime", version.ref = "nav3Core" }
-androidx-navigation3-ui = { group = "androidx.navigation3",name = "navigation3-ui", version.ref = "nav3Core" }
+androidx-navigation3-ui = { group = "androidx.navigation3", name = "navigation3-ui", version.ref = "nav3Core" }
 androidx-lifecycle-viewmodel-navigation3 = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-navigation3", version.ref = "lifecycleViewmodelNav3" }
 androidx-material3-adaptive-navigation3 = { group = "androidx.compose.material3.adaptive", name = "adaptive-navigation3", version.ref = "material3AdaptiveNav3" }
+kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinxCoroutines" }
+kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "kotlinxCoroutines" }
 
-
-androidx-lifecycle-viewmodel-compose = { group = "androidx.lifecycle",name = "lifecycle-viewmodel-compose", version.ref = "lifecycleRuntimeKtx" }
+androidx-lifecycle-viewmodel-compose = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-compose", version.ref = "lifecycleRuntimeKtx" }
 androidx-lifecycle-runtime-compose = { group = "androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "lifecycleRuntimeKtx" }
 
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
@@ -71,6 +74,7 @@ koin-core = { group = "io.insert-koin", name = "koin-core", version.ref = "koin"
 koin-androidx-compose = { group = "io.insert-koin", name = "koin-androidx-compose", version.ref = "koin" }
 
 timber = { module = "com.jakewharton.timber:timber", version.ref = "timber" }
+androidx-compose-animation-core = { group = "androidx.compose.animation", name = "animation-core", version.ref = "animationCore" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
@@ -81,12 +85,13 @@ ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 room = { id = "androidx.room", version.ref = "room" }
 
-google-services = { id = "com.google.gms.google-services", version.ref = "google-services"}
-firebase-crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "firebase-crashlytics"}
+google-services = { id = "com.google.gms.google-services", version.ref = "google-services" }
+firebase-crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "firebase-crashlytics" }
 
 
 [bundles]
-androidx-ktx = ["androidx-core-ktx","androidx-lifecycle-runtime-ktx"]
+coroutines = ["kotlinx-coroutines-core","kotlinx-coroutines-android"]
+androidx-ktx = ["androidx-core-ktx", "androidx-lifecycle-runtime-ktx", ]
 compose = [
     "androidx-activity-compose",
     "androidx-navigation3-runtime",
@@ -99,8 +104,9 @@ compose = [
     "androidx-compose-ui",
     "androidx-compose-ui-graphics",
     "androidx-compose-ui-tooling-preview",
+    "androidx-compose-animation-core",
 ]
 compose-debug = ["androidx-compose-ui-tooling", "androidx-compose-ui-test-manifest", ]
 koin-compose = ["koin-core", "koin-android", "koin-androidx-compose"]
-android-test = ["androidx-junit","androidx-espresso-core","androidx-compose-ui-test-junit4"]
-firebase = ["google-firebase-crashlytics","google-firebase-analytics"]
+android-test = ["androidx-junit", "androidx-espresso-core", "androidx-compose-ui-test-junit4"]
+firebase = ["google-firebase-crashlytics", "google-firebase-analytics"]

@@ -59,6 +59,9 @@ dependencies {
     //Androidx ktx
     implementation(libs.bundles.androidx.ktx)
 
+    //Coroutines
+    implementation(libs.bundles.coroutines)
+
     implementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(platform(libs.androidx.compose.bom))
 

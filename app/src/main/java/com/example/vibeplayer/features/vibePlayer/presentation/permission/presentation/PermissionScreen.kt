@@ -29,9 +29,8 @@ import com.example.vibeplayer.core.presentation.designsystem.VibePlayerIcons
 import com.example.vibeplayer.core.presentation.designsystem.bodyMediumRegular
 import com.example.vibeplayer.core.presentation.designsystem.components.VibePLayerLifecycleEventListener
 import com.example.vibeplayer.core.presentation.designsystem.components.VibePlayerDialog
-import com.example.vibeplayer.core.presentation.designsystem.textPrimary
 import com.example.vibeplayer.core.presentation.designsystem.textSecondary
-import com.example.vibeplayer.features.vibePlayer.presentation.designsystem.common.VibePlayerButton
+import com.example.vibeplayer.core.presentation.designsystem.components.VibePlayerButton
 
 @Composable
 fun PermissionScreen(
@@ -93,9 +92,7 @@ fun PermissionScreen(
             Text(
                 modifier = Modifier.padding(top = 28.dp),
                 text = stringResource(R.string.app_name),
-                style = MaterialTheme.typography.titleLarge.copy(
-                    color = MaterialTheme.colorScheme.textPrimary
-                )
+                style = MaterialTheme.typography.titleLarge
             )
 
             Text(

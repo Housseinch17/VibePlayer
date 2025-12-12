@@ -1,4 +1,4 @@
-package com.example.vibeplayer.features.vibePlayer.presentation.designsystem.common
+package com.example.vibeplayer.core.presentation.designsystem.components
 
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults

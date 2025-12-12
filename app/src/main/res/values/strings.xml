@@ -11,5 +11,13 @@ songs</string>
     <string name="ok">OK</string>
     <string name="try_again">Try Again</string>
     <string name="logo_icon">Logo Icon</string>
+    <string name="radar">Scanning Radar</string>
+    <string name="scanning_your_device_for_music">Scanning your device for music...</string>
+    <string name="no_music_found">No music found</string>
+    <string name="try_scanning_again">Try scanning again or check your folders.</string>
+    <string name="scan_again">Scan again</string>
+    <string name="scan">Scan</string>
+    <string name="audio_description">Audio Description</string>
+    <string name="floating_action_button">Floating Action Button</string>
 
 </resources>
