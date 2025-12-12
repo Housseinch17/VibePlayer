@@ -45,10 +45,11 @@ fun MainListItem(
                 .clip(RoundedCornerShape(10.dp)),
             contentDescription = null,
             model = ImageRequest.Builder(LocalContext.current)
-                .data(song.embeddedArt ?: SongImageDefault)
+                .data(song.embeddedArt)
                 .crossfade(true)
                 .build(),
-            contentScale = ContentScale.Crop
+            contentScale = ContentScale.Crop,
+            error = SongImageDefault
         )
 
         Column(
