@@ -1,5 +1,6 @@
 package com.example.vibeplayer.core.database
 
+import android.net.Uri
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
@@ -12,5 +13,5 @@ data class SongEntity(
     val filePath: String,
     val duration: Long,
     val size: Int,
-    val embeddedArt: ByteArray?,
+    val embeddedArt: Uri?,
 )

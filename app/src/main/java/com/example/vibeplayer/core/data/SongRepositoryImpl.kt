@@ -1,7 +1,8 @@
 package com.example.vibeplayer.core.data
 
+import android.content.ContentUris
 import android.content.Context
-import android.media.MediaMetadataRetriever
+import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
 import com.example.vibeplayer.core.database.SongDao
@@ -49,7 +50,6 @@ class SongRepositoryImpl(
     override fun syncSongsIfEmpty(): Flow<Result<Unit>> = flow {
         if (songDao.getSongs().first().isEmpty()) {
             try {
-                emit(Result.Loading)
                 val songsFromDevice = fetchSongs()
                 val songEntities = songsFromDevice.map { it.toEntity() }
 
@@ -76,6 +76,7 @@ class SongRepositoryImpl(
 
         val projection = arrayOf(
             MediaStore.Audio.Media._ID,
+            MediaStore.Audio.Media.ALBUM_ID,
             MediaStore.Audio.Media.TITLE,
             MediaStore.Audio.Media.ARTIST,
             MediaStore.Audio.Media.DATA,
@@ -94,32 +95,37 @@ class SongRepositoryImpl(
         )?.use { cursor ->
             val idCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID)
             val titleCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE)
+            val albumIdColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM_ID)
             val artistCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST)
             val dataCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA)
             val durationCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION)
             val sizeCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.SIZE)
 
             while (cursor.moveToNext()) {
-                val retriever = MediaMetadataRetriever()
-                var artBytes: ByteArray? = null
-                try {
-                    retriever.setDataSource(cursor.getString(dataCol))
-                    artBytes = retriever.embeddedPicture
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                } finally {
-                    retriever.release()
-                }
+                // Get values of columns for a given audio.
+                val id = cursor.getLong(idCol)
+                val albumId = cursor.getLong(albumIdColumn)
+                val title = cursor.getString(titleCol)
+                val artist = cursor.getString(artistCol)
+                val filePath = cursor.getString(dataCol)
+                val duration = cursor.getLong(durationCol)
+                val size = cursor.getInt(sizeCol)
+
+                //use album id here with MediaStore for Albums and not Audio
+                val photoUri: Uri = ContentUris.withAppendedId(
+                    MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI,
+                    albumId
+                )
 
                 songs.add(
                     Song(
-                        id = cursor.getLong(idCol),
-                        title = cursor.getString(titleCol),
-                        artist = cursor.getString(artistCol),
-                        filePath = cursor.getString(dataCol),
-                        duration = cursor.getLong(durationCol),
-                        size = cursor.getInt(sizeCol),
-                        embeddedArt = artBytes
+                        id = id,
+                        title = title,
+                        artist = artist,
+                        filePath = filePath,
+                        duration = duration,
+                        size = size,
+                        embeddedArt = photoUri
                     )
                 )
             }
