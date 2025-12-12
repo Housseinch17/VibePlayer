@@ -1,4 +1,4 @@
-package com.example.vibeplayer.features.vibePlayer.presentation.permission.presentation
+package com.example.vibeplayer.feature.permission.presentation
 
 import android.content.Intent
 import android.net.Uri
@@ -25,7 +25,7 @@ import androidx.core.app.ActivityCompat
 import androidx.lifecycle.Lifecycle
 import com.example.vibeplayer.R
 import com.example.vibeplayer.app.presentation.MainActivity
-import com.example.vibeplayer.core.presentation.designsystem.buttons.VibePlayerPrimaryButton
+import com.example.vibeplayer.core.presentation.designsystem.components.VibePlayerPrimaryButton
 import com.example.vibeplayer.core.presentation.designsystem.components.VibePLayerLifecycleEventListener
 import com.example.vibeplayer.core.presentation.designsystem.components.VibePlayerDialog
 import com.example.vibeplayer.core.presentation.designsystem.theme.VibePlayerIcons

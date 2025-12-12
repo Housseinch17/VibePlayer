@@ -1,4 +1,4 @@
-package com.example.vibeplayer.features.vibePlayer.presentation.permission.presentation
+package com.example.vibeplayer.feature.permission.presentation
 
 data class PermissionUiState(
     val hasGranted: Boolean? = null,

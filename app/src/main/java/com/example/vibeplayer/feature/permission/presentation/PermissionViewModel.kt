@@ -1,4 +1,4 @@
-package com.example.vibeplayer.features.vibePlayer.presentation.permission.presentation
+package com.example.vibeplayer.feature.permission.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

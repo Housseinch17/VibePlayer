@@ -1,4 +1,4 @@
-package com.example.vibeplayer.core.presentation.designsystem.buttons
+package com.example.vibeplayer.core.presentation.designsystem.components
 
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState

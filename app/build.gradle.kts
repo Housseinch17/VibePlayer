@@ -104,7 +104,4 @@ dependencies {
     //Timber
     implementation(libs.timber)
 
-    //ProcessLifecycleOwner provides a lifecycle for the whole application process
-    implementation (libs.androidx.lifecycle.process)
-
 }
