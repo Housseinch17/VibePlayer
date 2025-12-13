@@ -11,61 +11,80 @@ import com.example.vibeplayer.core.database.toEntity
 import com.example.vibeplayer.core.domain.Result
 import com.example.vibeplayer.core.domain.Song
 import com.example.vibeplayer.core.domain.SongRepository
-import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 
 class SongRepositoryImpl(
     private val context: Context,
     private val songDao: SongDao
 ) : SongRepository {
+    private val dispatchersIo = Dispatchers.IO
 
-    private val repositoryScope = CoroutineScope(Dispatchers.IO)
-
-    init {
-        cleanUpRemovedSongs()
-    }
-
-    override fun getSongs(): Flow<List<Song>> {
-        return songDao.getSongs().map { it.toDomainModel() }
-    }
-
-    private fun cleanUpRemovedSongs() {
-        repositoryScope.launch {
+    override suspend fun cleanUpRemovedSongs(): Result<Unit> = withContext(dispatchersIo) {
+        try {
             val songs = songDao.getSongs().first()
             songs.map { songEntity ->
                 if (!File(songEntity.filePath).exists()) {
                     songDao.removeSong(songEntity)
                 }
             }
+            Result.Success(Unit)
+        } catch (e: Exception) {
+            if (e is CancellationException) {
+                throw e
+            }
+            Result.Error(exception = e)
         }
     }
 
-    override fun syncSongsIfEmpty(): Flow<Result<Unit>> = flow {
+    override fun getSongs(): Flow<List<Song>> {
+        return songDao.getSongs().map { it.toDomainModel() }
+    }
+
+    override suspend fun syncSongsIfEmpty(): Result<Unit> = withContext(dispatchersIo) {
         if (songDao.getSongs().first().isEmpty()) {
             try {
                 val songsFromDevice = fetchSongs()
-                val songEntities = songsFromDevice.map { it.toEntity() }
 
-                if (songEntities.isNotEmpty()) {
+                if (songsFromDevice.isNotEmpty()) {
+                    val songEntities = songsFromDevice.map { it.toEntity() }
                     songDao.upsertAll(songEntities)
                 }
-                emit(Result.Success(Unit))
+                Result.Success(Unit)
             } catch (e: Exception) {
-                emit(Result.Error(e))
+                if (e is CancellationException) {
+                    throw e
+                }
+                Result.Error(e)
             }
         } else {
-            emit(Result.Success(Unit))
+            Result.Success(Unit)
         }
-    }.flowOn(Dispatchers.IO)
+    }
 
-    private fun fetchSongs(): List<Song> {
+    override suspend fun scanAgain(): List<Song> = withContext(dispatchersIo) {
+        return@withContext try {
+            val songs = fetchSongs()
+            val songsToEntity = songs.map {
+                it.toEntity()
+            }
+            songDao.upsertAll(songsToEntity)
+            songs
+        } catch (e: Exception) {
+            if (e is CancellationException) {
+                throw e
+            }
+            emptyList()
+        }
+    }
+
+
+    private suspend fun fetchSongs(): List<Song> = withContext(dispatchersIo) {
         val songs = mutableListOf<Song>()
 
         val collection = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -130,7 +149,7 @@ class SongRepositoryImpl(
                 )
             }
         }
-        return songs
+        return@withContext songs
     }
 }
 

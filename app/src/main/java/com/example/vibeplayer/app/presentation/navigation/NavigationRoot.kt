@@ -67,6 +67,9 @@ fun NavigationRoot(
                     ObserveAsEvents(mainViewModel.mainPageEvents) { events ->
                         when (events) {
                             MainPageEvents.NavigateToScanMusic -> backStack.add(NavigationScreens.ScanMusic)
+                            is MainPageEvents.NavigateToNowPlaying -> backStack.add(
+                                NavigationScreens.NowPlaying(events.songId)
+                            )
                         }
                     }
                     MainPageScreen(
@@ -76,7 +79,7 @@ fun NavigationRoot(
                     )
                 }
 
-                NavigationScreens.NowPlaying -> NavEntry(key) {
+                is NavigationScreens.NowPlaying -> NavEntry(key) {
 
                 }
 
