@@ -108,6 +108,7 @@ fun PermissionScreen(
             )
 
             VibePlayerPrimaryButton (
+                modifier = Modifier.padding(top = 20.dp),
                 text = stringResource(R.string.allow_access),
             ) {
                 permissionLauncher.launch(permission)

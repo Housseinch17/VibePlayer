@@ -15,5 +15,5 @@ sealed interface NavigationScreens {
     data object ScanMusic : NavigationScreens
 
     @Serializable
-    data object NowPlaying : NavigationScreens
+    data class NowPlaying(val songId: Long = -1) : NavigationScreens
 }
