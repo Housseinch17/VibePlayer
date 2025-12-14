@@ -10,22 +10,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 
 @Composable
-fun rememberRotationEveryTwoSeconds(): Float{
-    // Create an infinite transition
-    val infiniteTransition = rememberInfiniteTransition()
-
-    // Animate the rotation from 0f to 360f infinitely
-    val rotation by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 360f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(
-                durationMillis = 2000, // 2 seconds for one full rotation
-                easing = LinearEasing    // smooth constant speed
-            ),
-            repeatMode = RepeatMode.Restart
+fun rotationIfScanning(isScanning: Boolean = true): Float {
+    return if (isScanning) {
+        val infiniteTransition = rememberInfiniteTransition()
+        val rotation by infiniteTransition.animateFloat(
+            initialValue = 0f,
+            targetValue = 360f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(2000, easing = LinearEasing),
+                repeatMode = RepeatMode.Restart
+            )
         )
-    )
-
-    return rotation
+        rotation
+    } else {
+        0f
+    }
 }

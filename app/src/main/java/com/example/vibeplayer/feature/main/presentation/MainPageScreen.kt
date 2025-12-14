@@ -2,6 +2,7 @@ package com.example.vibeplayer.feature.main.presentation
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -38,7 +39,7 @@ import com.example.vibeplayer.core.domain.Song
 import com.example.vibeplayer.core.presentation.designsystem.components.VibePlayerAsyncImage
 import com.example.vibeplayer.core.presentation.designsystem.components.VibePlayerIconShape
 import com.example.vibeplayer.core.presentation.designsystem.components.VibePlayerPrimaryButton
-import com.example.vibeplayer.core.presentation.designsystem.components.rememberRotationEveryTwoSeconds
+import com.example.vibeplayer.core.presentation.designsystem.components.rotationIfScanning
 import com.example.vibeplayer.core.presentation.designsystem.theme.VibePlayerIcons
 import com.example.vibeplayer.core.presentation.designsystem.theme.VibePlayerImages
 import com.example.vibeplayer.core.presentation.designsystem.theme.accent
@@ -74,7 +75,7 @@ fun MainPageScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(start = 16.dp, top = 10.dp, bottom = 10.dp, end = 10.dp),
-                isClickable = mainPageUiState.songState !is SongState.Scanning,
+                isEnabled = mainPageUiState.songState !is SongState.Scanning,
                 clickScan = {
                     onActions(MainPageActions.NavigateToScanMusic)
                 }
@@ -117,7 +118,10 @@ fun MainPageScreen(
                     TrackListState(
                         modifier = Modifier,
                         state = lazyListState,
-                        songList = mainPageUiState.songState.songList
+                        songList = mainPageUiState.songState.songList,
+                        onSongItemClick = { songId ->
+                            onActions(MainPageActions.NavigateToNowPlaying(songId = songId))
+                        }
                     )
                 }
             }
@@ -130,6 +134,7 @@ fun MainPageScreen(
 fun TrackListState(
     modifier: Modifier = Modifier,
     state: LazyListState,
+    onSongItemClick: (Long) -> Unit,
     songList: List<Song>
 ) {
     Column(
@@ -144,10 +149,12 @@ fun TrackListState(
             items(songList, key = {
                 it.id
             }) { song ->
-
                 SongItem(
                     modifier = Modifier,
-                    song = song
+                    song = song,
+                    onSongItemClick = {
+                        onSongItemClick(song.id)
+                    }
                 )
                 HorizontalDivider(
                     modifier = Modifier.fillMaxWidth(),
@@ -162,7 +169,7 @@ fun TrackListState(
 fun ScanningState(
     modifier: Modifier = Modifier,
 ) {
-    val rotationEveryTwoSeconds = rememberRotationEveryTwoSeconds()
+    val rotationEveryTwoSeconds = rotationIfScanning()
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.Center,
@@ -221,12 +228,15 @@ fun EmptyState(
 @Composable
 fun SongItem(
     modifier: Modifier = Modifier,
+    onSongItemClick: () -> Unit,
     song: Song
 ) {
     Row(
-        modifier = modifier.padding(vertical = 12.dp),
+        modifier = modifier
+            .padding(vertical = 12.dp)
+            .clickable(onClick = onSongItemClick),
         verticalAlignment = Alignment.CenterVertically,
-        ) {
+    ) {
         VibePlayerAsyncImage(
             modifier = Modifier
                 .size(64.dp)
@@ -271,7 +281,7 @@ fun SongItem(
 @Composable
 fun MainPageTopBar(
     modifier: Modifier = Modifier,
-    isClickable: Boolean,
+    isEnabled: Boolean,
     clickScan: () -> Unit
 ) {
     Row(
@@ -290,7 +300,7 @@ fun MainPageTopBar(
             modifier = Modifier,
             imageVector = VibePlayerIcons.Scan,
             iconDescription = stringResource(R.string.scan),
-            isClickable = isClickable,
+            isEnabled = isEnabled,
             onClick = clickScan
         )
     }

@@ -27,7 +27,7 @@ fun VibePlayerIconShape(
     iconModifier: Modifier = Modifier
         .padding(10.dp)
         .size(16.dp),
-    isClickable: Boolean = true,
+    isEnabled: Boolean = true,
     onClick: () -> Unit = {},
     tintColor: Color = MaterialTheme.colorScheme.textSecondary
 ) {
@@ -39,7 +39,7 @@ fun VibePlayerIconShape(
             )
             .clip(CircleShape)
             .clickable(
-                enabled = isClickable,
+                enabled = isEnabled,
                 onClick = onClick
             ),
         contentAlignment = Alignment.Center

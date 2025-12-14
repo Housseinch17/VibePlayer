@@ -18,6 +18,9 @@ import com.example.vibeplayer.feature.main.presentation.MainViewModel
 import com.example.vibeplayer.feature.permission.presentation.PermissionEvents
 import com.example.vibeplayer.feature.permission.presentation.PermissionScreen
 import com.example.vibeplayer.feature.permission.presentation.PermissionViewModel
+import com.example.vibeplayer.feature.scan_music.presentation.ScanMusicEvents
+import com.example.vibeplayer.feature.scan_music.presentation.ScanMusicScreen
+import com.example.vibeplayer.feature.scan_music.presentation.ScanMusicViewModel
 import org.koin.androidx.compose.koinViewModel
 
 
@@ -79,13 +82,27 @@ fun NavigationRoot(
                     )
                 }
 
+                NavigationScreens.ScanMusic -> NavEntry(key) {
+                    val scanMusicViewModel = koinViewModel<ScanMusicViewModel>()
+                    val scanMusicUi by scanMusicViewModel.scanMusicUi.collectAsStateWithLifecycle()
+
+                    ObserveAsEvents(scanMusicViewModel.scanMusicEvents) { events ->
+                        when (events) {
+                            //backstack.removeLastOrNull() similar to navigateUp()
+                            ScanMusicEvents.NavigateBack -> backStack.removeLastOrNull()
+                        }
+                    }
+                    ScanMusicScreen(
+                        modifier = Modifier.fillMaxSize(),
+                        scanMusicUi = scanMusicUi,
+                        onActions = scanMusicViewModel::onActions
+                    )
+                }
+
                 is NavigationScreens.NowPlaying -> NavEntry(key) {
 
                 }
 
-                NavigationScreens.ScanMusic -> NavEntry(key) {
-
-                }
             }
         }
     )

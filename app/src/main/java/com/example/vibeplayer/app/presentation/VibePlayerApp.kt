@@ -3,11 +3,10 @@ package com.example.vibeplayer.app.presentation
 import android.app.Application
 import com.example.vibeplayer.BuildConfig
 import com.example.vibeplayer.app.di.appModule
-import com.example.vibeplayer.core.di.coreDataModule
-import com.example.vibeplayer.core.CoreModule.coreModule
-import com.example.vibeplayer.core.database.di.databaseModule
+import com.example.vibeplayer.core.di.coreModule
 import com.example.vibeplayer.feature.main.di.mainModule
-import com.example.vibeplayer.feature.permission.di.PermissionModule.permissionModule
+import com.example.vibeplayer.feature.permission.di.permissionModule
+import com.example.vibeplayer.feature.scan_music.di.scanMusicModule
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -33,8 +32,7 @@ class VibePlayerApp : Application() {
                 coreModule,
                 permissionModule,
                 mainModule,
-                coreDataModule,
-                databaseModule
+                scanMusicModule,
             )
         }
     }

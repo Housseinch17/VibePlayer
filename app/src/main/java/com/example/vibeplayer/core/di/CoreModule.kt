@@ -1,11 +1,15 @@
-package com.example.vibeplayer.core.database.di
+package com.example.vibeplayer.core.di
 
 import androidx.room.Room
+import com.example.vibeplayer.core.data.SongRepositoryImpl
 import com.example.vibeplayer.core.database.SongDatabase
+import com.example.vibeplayer.core.domain.SongRepository
 import org.koin.android.ext.koin.androidApplication
+import org.koin.core.module.dsl.singleOf
+import org.koin.dsl.bind
 import org.koin.dsl.module
 
-val databaseModule = module {
+val coreModule = module {
     single<SongDatabase> {
         Room.databaseBuilder(
             androidApplication(),
@@ -16,4 +20,6 @@ val databaseModule = module {
     single {
         get<SongDatabase>().songDao
     }
+
+    singleOf(::SongRepositoryImpl).bind<SongRepository>()
 }

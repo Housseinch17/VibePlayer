@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.util.concurrent.TimeUnit
 
 class SongRepositoryImpl(
     private val context: Context,
@@ -67,24 +68,34 @@ class SongRepositoryImpl(
         }
     }
 
-    override suspend fun scanAgain(): List<Song> = withContext(dispatchersIo) {
+    override suspend fun scanAgain(
+        duration: Long,
+        size: Long,
+    ): Result<List<Song>> = withContext(dispatchersIo) {
         return@withContext try {
-            val songs = fetchSongs()
+            val songs = fetchSongs(
+                duration = duration,
+                size = size
+            )
             val songsToEntity = songs.map {
                 it.toEntity()
             }
+            songDao.removeAllSongs()
             songDao.upsertAll(songsToEntity)
-            songs
+            Result.Success(data = songs)
         } catch (e: Exception) {
             if (e is CancellationException) {
                 throw e
             }
-            emptyList()
+            Result.Success(emptyList())
         }
     }
 
 
-    private suspend fun fetchSongs(): List<Song> = withContext(dispatchersIo) {
+    private suspend fun fetchSongs(
+        duration: Long = 0,
+        size: Long = 0
+    ): List<Song> = withContext(dispatchersIo) {
         val songs = mutableListOf<Song>()
 
         val collection = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -103,14 +114,31 @@ class SongRepositoryImpl(
             MediaStore.Audio.Media.SIZE
         )
 
-        val selection = "${MediaStore.Audio.Media.IS_MUSIC} != 0"
+        //convert to millis since audio duration is in millis
+        val durationInMillis = TimeUnit.MILLISECONDS.convert(duration, TimeUnit.SECONDS).toString()
+        //convert to Bytes since audio size is in Bytes
+        val sizeInBytes = (size * 1024).toString()
 
+        // Show only audios that are at least duration and size.
+        val selection =
+            "${MediaStore.Audio.Media.DURATION} >= ? AND ${MediaStore.Audio.Media.SIZE} >= ? AND ${MediaStore.Audio.Media.IS_MUSIC} = ?"
+
+        //here the variables values to show like show duration which is at least durationInMillis...
+        //for "1" here it's for IS_MUSIC 1 means true and 0 false
+        val selectionArgs = arrayOf(
+            durationInMillis,
+            sizeInBytes,
+            "1"
+        )
+
+        val sortOrder = "${MediaStore.Audio.Media.TITLE} ASC"
         context.contentResolver.query(
             collection,
             projection,
             selection,
-            null,
-            "${MediaStore.Audio.Media.TITLE} ASC"
+            selectionArgs,
+            sortOrder
+
         )?.use { cursor ->
             val idCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID)
             val titleCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE)
