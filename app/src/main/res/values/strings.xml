@@ -26,4 +26,7 @@ songs</string>
     <string name="back">Back</string>
     <string name="loader">Loader</string>
     <string name="scanning">Scanning</string>
+    <string name="scan_complete">Scan complete — %1$d songs found.</string>
+    <string name="scan_error">Scan Error</string>
+
 </resources>
