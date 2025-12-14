@@ -6,7 +6,7 @@ object Constants {
 
     val durationList: List<String> = listOf(
         "30",
-        "80"
+        "60"
     )
 
     val sizeList: List<String> = listOf(

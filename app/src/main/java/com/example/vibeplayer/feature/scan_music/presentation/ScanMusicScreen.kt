@@ -10,17 +10,23 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.vibeplayer.R
 import com.example.vibeplayer.core.presentation.designsystem.components.VibePlayerIconShape
 import com.example.vibeplayer.core.presentation.designsystem.components.VibePlayerPrimaryButton
+import com.example.vibeplayer.core.presentation.designsystem.components.VibePlayerSnackbar
 import com.example.vibeplayer.core.presentation.designsystem.components.VibePlayerTextWithTwoRadioButtons
 import com.example.vibeplayer.core.presentation.designsystem.components.rotationIfScanning
 import com.example.vibeplayer.core.presentation.designsystem.theme.VibePlayerIcons
@@ -34,6 +40,18 @@ fun ScanMusicScreen(
     scanMusicUi: ScanMusicUi,
     onActions: (ScanMusicActions) -> Unit,
 ) {
+    val snackBarHostState = remember { SnackbarHostState() }
+    val context = LocalContext.current
+
+    LaunchedEffect(scanMusicUi.snackbarMessage) {
+        if (scanMusicUi.snackbarMessage != null) {
+            snackBarHostState.showSnackbar(
+                message = scanMusicUi.snackbarMessage.asString(context = context),
+                withDismissAction = false
+            )
+        }
+    }
+
     Scaffold(
         modifier = modifier.padding(horizontal = 16.dp),
         topBar = {
@@ -41,7 +59,9 @@ fun ScanMusicScreen(
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 Text(
-                    modifier = Modifier.fillMaxWidth().align(Alignment.Center),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .align(Alignment.Center),
                     text = stringResource(R.string.scan_music),
                     style = MaterialTheme.typography.bodyLargeMedium.copy(
                         color = MaterialTheme.colorScheme.textPrimary,
@@ -59,6 +79,16 @@ fun ScanMusicScreen(
                     },
                 )
             }
+        },
+        snackbarHost = {
+            SnackbarHost(
+                hostState = snackBarHostState,
+                snackbar = { data ->
+                    VibePlayerSnackbar(
+                        snackbarData = data
+                    )
+                }
+            )
         }
     ) { innerPadding ->
         Column(
