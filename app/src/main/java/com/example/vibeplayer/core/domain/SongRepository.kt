@@ -6,6 +6,9 @@ interface SongRepository {
     suspend fun syncSongsIfEmpty(): Result<Any>
     suspend fun cleanUpRemovedSongs(): Result<Unit>
     fun getSongs(): Flow<List<Song>>
-    suspend fun scanAgain(): List<Song>
+    suspend fun scanAgain(
+        duration: Long = 0,
+        size: Long = 0,
+    ): Result<List<Song>>
 
 }

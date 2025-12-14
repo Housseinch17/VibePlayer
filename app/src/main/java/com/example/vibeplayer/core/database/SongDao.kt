@@ -18,6 +18,9 @@ interface SongDao {
     @Delete
     suspend fun removeSong(song: SongEntity)
 
+    @Query("DELETE FROM songentity")
+    suspend fun removeAllSongs()
+
     @Upsert
     suspend fun upsertAll(songs: List<SongEntity>)
 }

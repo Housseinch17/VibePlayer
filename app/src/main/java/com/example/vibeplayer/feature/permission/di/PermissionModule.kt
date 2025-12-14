@@ -4,8 +4,6 @@ import com.example.vibeplayer.feature.permission.presentation.PermissionViewMode
 import org.koin.androidx.viewmodel.dsl.viewModelOf
 import org.koin.dsl.module
 
-object PermissionModule {
-    val permissionModule = module {
-        viewModelOf(::PermissionViewModel)
-    }
+val permissionModule = module {
+    viewModelOf(::PermissionViewModel)
 }

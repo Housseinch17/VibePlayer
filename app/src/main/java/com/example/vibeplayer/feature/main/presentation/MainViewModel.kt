@@ -2,6 +2,7 @@ package com.example.vibeplayer.feature.main.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.vibeplayer.core.domain.Result
 import com.example.vibeplayer.core.domain.SongRepository
 import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.Channel
@@ -64,14 +65,24 @@ class MainViewModel(
             )
         }
         viewModelScope.launch {
-            val scanAgain = songRepository.scanAgain()
-            _mainPageUiState.update { newState ->
-                newState.copy(
-                    songState = if (scanAgain.isEmpty()) SongState.Empty else SongState.TrackList(
-                        songList = scanAgain
+            when(val scanAgain = songRepository.scanAgain()){
+                is Result.Success -> {
+                    _mainPageUiState.update { newState ->
+                        newState.copy(
+                            songState = if (scanAgain.data.isEmpty()) SongState.Empty else SongState.TrackList(
+                                songList = scanAgain.data
+                            )
+                        )
+                    }
+                }
+
+                else -> {  _mainPageUiState.update { newState ->
+                    newState.copy(
+                        songState =  SongState.Empty
                     )
-                )
+                }}
             }
+
         }
     }
 

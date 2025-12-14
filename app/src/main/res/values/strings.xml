@@ -18,4 +18,12 @@ songs</string>
     <string name="scan">Scan</string>
     <string name="audio_description">Audio Description</string>
     <string name="floating_action_button">Floating Action Button</string>
+
+    <string name="radio_button">Radio Button</string>
+    <string name="ignore_duration_less_than">Ignore duration less than</string>
+    <string name="ignore_size_less_than">Ignore size less than</string>
+    <string name="scan_music">Scan Music</string>
+    <string name="back">Back</string>
+    <string name="loader">Loader</string>
+    <string name="scanning">Scanning</string>
 </resources>
