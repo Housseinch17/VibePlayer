@@ -104,4 +104,7 @@ dependencies {
     //Timber
     implementation(libs.timber)
 
+    //Media3 Exoplayer
+    implementation(libs.bundles.media3)
+
 }

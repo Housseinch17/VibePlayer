@@ -1,4 +1,4 @@
-package com.example.vibeplayer.core.data
+package com.example.vibeplayer.core.presentation.ui
 
 object Constants {
     const val DURATION_DEFAULT = "30"

@@ -90,9 +90,14 @@ class ScanMusicViewModel(
                 )
             }
             //delay to show the snackbar
-            delay(2.seconds)
+            delay(1.seconds)
             //navigate to MainPage
             navigateBack()
+            _scanMusicUi.update { newState ->
+                newState.copy(
+                    snackbarMessage = null
+                )
+            }
         }
     }
 

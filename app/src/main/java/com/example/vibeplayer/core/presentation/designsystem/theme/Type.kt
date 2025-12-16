@@ -5,6 +5,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import com.example.vibeplayer.R
 
@@ -29,7 +30,8 @@ val Typography = Typography(
         fontWeight = FontWeight.Medium,
         fontSize = 24.sp,
         lineHeight = 28.sp,
-        color = TextPrimary
+        color = TextPrimary,
+        textAlign = TextAlign.Center
     ),
     titleMedium = TextStyle(
         fontFamily = hostGroteskFamily,

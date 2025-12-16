@@ -1,8 +1,8 @@
 package com.example.vibeplayer.feature.scan_music.presentation
 
-import com.example.vibeplayer.core.data.Constants
-import com.example.vibeplayer.core.data.Constants.DURATION_DEFAULT
-import com.example.vibeplayer.core.data.Constants.SIZE_DEFAULT
+import com.example.vibeplayer.core.presentation.ui.Constants
+import com.example.vibeplayer.core.presentation.ui.Constants.DURATION_DEFAULT
+import com.example.vibeplayer.core.presentation.ui.Constants.SIZE_DEFAULT
 import com.example.vibeplayer.core.presentation.ui.UiText
 
 data class ScanMusicUi(

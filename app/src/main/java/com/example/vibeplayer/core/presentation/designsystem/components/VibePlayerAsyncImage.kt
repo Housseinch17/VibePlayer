@@ -9,7 +9,7 @@ import coil.request.ImageRequest
 @Composable
 fun VibePlayerAsyncImage(
     modifier: Modifier = Modifier,
-    imageUrl: Any,
+    imageUrl: Any?,
     contentDescription: String,
     errorDrawable: Int,
 ) {

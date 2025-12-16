@@ -5,6 +5,7 @@ import com.example.vibeplayer.BuildConfig
 import com.example.vibeplayer.app.di.appModule
 import com.example.vibeplayer.core.di.coreModule
 import com.example.vibeplayer.feature.main.di.mainModule
+import com.example.vibeplayer.feature.now_playing.di.nowPlayingModule
 import com.example.vibeplayer.feature.permission.di.permissionModule
 import com.example.vibeplayer.feature.scan_music.di.scanMusicModule
 import kotlinx.coroutines.CoroutineScope
@@ -33,6 +34,7 @@ class VibePlayerApp : Application() {
                 permissionModule,
                 mainModule,
                 scanMusicModule,
+                nowPlayingModule,
             )
         }
     }

@@ -28,5 +28,10 @@ songs</string>
     <string name="scanning">Scanning</string>
     <string name="scan_complete">Scan complete — %1$d songs found.</string>
     <string name="scan_error">Scan Error</string>
+    <string name="song_image">Song Image</string>
+    <string name="play">Play</string>
+    <string name="pause">Pause</string>
+    <string name="play_next">Play Next</string>
+    <string name="play_previous">Play Previous</string>
 
 </resources>

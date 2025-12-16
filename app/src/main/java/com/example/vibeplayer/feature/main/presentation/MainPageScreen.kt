@@ -32,7 +32,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.vibeplayer.R
 import com.example.vibeplayer.core.domain.Song
@@ -119,8 +118,8 @@ fun MainPageScreen(
                         modifier = Modifier,
                         state = lazyListState,
                         songList = mainPageUiState.songState.songList,
-                        onSongItemClick = { songId ->
-                            onActions(MainPageActions.NavigateToNowPlaying(songId = songId))
+                        onSongItemClick = { id ->
+                            onActions(MainPageActions.NavigateToNowPlaying(id = id))
                         }
                     )
                 }
@@ -134,7 +133,7 @@ fun MainPageScreen(
 fun TrackListState(
     modifier: Modifier = Modifier,
     state: LazyListState,
-    onSongItemClick: (Long) -> Unit,
+    onSongItemClick: (Int) -> Unit,
     songList: List<Song>
 ) {
     Column(
@@ -213,7 +212,6 @@ fun EmptyState(
             text = stringResource(R.string.try_scanning_again),
             style = MaterialTheme.typography.bodyMediumRegular.copy(
                 color = MaterialTheme.colorScheme.textSecondary,
-                textAlign = TextAlign.Center
             )
         )
 
@@ -241,8 +239,8 @@ fun SongItem(
             modifier = Modifier
                 .size(64.dp)
                 .clip(MaterialTheme.shapes.small),
-            imageUrl = song.embeddedArt!!,
-            errorDrawable = R.drawable.song_img_default,
+            imageUrl = song.embeddedArt,
+            errorDrawable = R.drawable.song_default,
             contentDescription = stringResource(R.string.audio_description)
         )
 

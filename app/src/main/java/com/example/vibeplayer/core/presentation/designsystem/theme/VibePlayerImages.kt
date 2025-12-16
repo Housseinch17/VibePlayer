@@ -15,10 +15,6 @@ object VibePlayerImages {
         @Composable
         get() = painterResource(R.drawable.radar_img)
 
-    val SongImageDefault: Painter
-        @Composable
-        get() = painterResource(R.drawable.song_img_default)
-
     val ScanningRadarImage: Painter
         @Composable
         get() = painterResource(R.drawable.radar_img)
