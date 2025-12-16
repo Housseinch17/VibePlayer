@@ -11,4 +11,7 @@ interface SongRepository {
         size: Long = 0,
     ): Result<List<Song>>
 
+    suspend fun getSongById(id: Int): Song
+    suspend fun getPreviousSong(previousId: Int): Song?
+    suspend fun getNextSong(nextId: Int): Song?
 }

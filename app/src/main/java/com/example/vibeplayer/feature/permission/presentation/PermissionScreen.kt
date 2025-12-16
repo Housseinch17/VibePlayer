@@ -19,15 +19,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.Lifecycle
 import com.example.vibeplayer.R
 import com.example.vibeplayer.app.presentation.MainActivity
-import com.example.vibeplayer.core.presentation.designsystem.components.VibePlayerPrimaryButton
 import com.example.vibeplayer.core.presentation.designsystem.components.VibePLayerLifecycleEventListener
 import com.example.vibeplayer.core.presentation.designsystem.components.VibePlayerDialog
+import com.example.vibeplayer.core.presentation.designsystem.components.VibePlayerPrimaryButton
 import com.example.vibeplayer.core.presentation.designsystem.theme.VibePlayerIcons
 import com.example.vibeplayer.core.presentation.designsystem.theme.bodyMediumRegular
 import com.example.vibeplayer.core.presentation.designsystem.theme.textPrimary
@@ -103,7 +102,6 @@ fun PermissionScreen(
                 text = stringResource(R.string.access_needed_string),
                 style = MaterialTheme.typography.bodyMediumRegular.copy(
                     color = MaterialTheme.colorScheme.textSecondary,
-                    textAlign = TextAlign.Center
                 )
             )
 

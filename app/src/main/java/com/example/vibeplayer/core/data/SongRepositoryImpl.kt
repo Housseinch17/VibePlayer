@@ -8,6 +8,7 @@ import android.provider.MediaStore
 import com.example.vibeplayer.core.database.SongDao
 import com.example.vibeplayer.core.database.toDomainModel
 import com.example.vibeplayer.core.database.toEntity
+import com.example.vibeplayer.core.database.toSong
 import com.example.vibeplayer.core.domain.Result
 import com.example.vibeplayer.core.domain.Song
 import com.example.vibeplayer.core.domain.SongRepository
@@ -91,6 +92,17 @@ class SongRepositoryImpl(
         }
     }
 
+    override suspend fun getSongById(id: Int): Song {
+        return songDao.getSongById(id = id).toSong()
+    }
+
+    override suspend fun getPreviousSong(previousId: Int): Song? {
+        return songDao.getPreviousSong(previousId = previousId)
+    }
+
+    override suspend fun getNextSong(nextId: Int): Song? {
+        return songDao.getNextSong(nextId = nextId)
+    }
 
     private suspend fun fetchSongs(
         duration: Long = 0,
@@ -164,15 +176,22 @@ class SongRepositoryImpl(
                     albumId
                 )
 
+                val audioUri: Uri = ContentUris.withAppendedId(
+                    collection,
+                    id
+                )
+
                 songs.add(
                     Song(
-                        id = id,
+                        id = 0,
+                        songId = id,
                         title = title,
                         artist = artist,
                         filePath = filePath,
                         duration = duration,
                         size = size,
-                        embeddedArt = photoUri
+                        embeddedArt = photoUri,
+                        audioUri = audioUri
                     )
                 )
             }

@@ -5,8 +5,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
 val ColorScheme.buttonPrimary: Color
-@Composable
-get() = ButtonPrimary
+    @Composable
+    get() = ButtonPrimary
 
 val ColorScheme.buttonPrimary30: Color
     @Composable
@@ -31,6 +31,10 @@ val ColorScheme.textDisabled: Color
 val ColorScheme.surfaceBG: Color
     @Composable
     get() = SurfaceBg
+
+val ColorScheme.surfaceOutline: Color
+    @Composable
+    get() = SurfaceOutline
 
 val ColorScheme.accent: Color
     @Composable

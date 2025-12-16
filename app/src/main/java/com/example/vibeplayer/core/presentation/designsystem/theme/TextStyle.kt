@@ -4,6 +4,7 @@ import androidx.compose.material3.Typography
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 
 val Typography.bodyLargeRegular: TextStyle
@@ -13,7 +14,8 @@ val Typography.bodyLargeRegular: TextStyle
         fontWeight = FontWeight.Normal,
         fontSize = 16.sp,
         lineHeight = 22.sp,
-        color = TextSecondary
+        color = TextSecondary,
+        textAlign = TextAlign.Center
     )
 
 val Typography.bodyLargeMedium: TextStyle
@@ -23,7 +25,8 @@ val Typography.bodyLargeMedium: TextStyle
         fontWeight = FontWeight.Medium,
         fontSize = 16.sp,
         lineHeight = 22.sp,
-        color = TextSecondary
+        color = TextSecondary,
+        textAlign = TextAlign.Center
     )
 
 val Typography.bodyMediumRegular: TextStyle
@@ -33,5 +36,6 @@ val Typography.bodyMediumRegular: TextStyle
         fontWeight = FontWeight.Normal,
         fontSize = 14.sp,
         lineHeight = 18.sp,
-        color = TextSecondary
+        color = TextSecondary,
+        textAlign = TextAlign.Center
     )

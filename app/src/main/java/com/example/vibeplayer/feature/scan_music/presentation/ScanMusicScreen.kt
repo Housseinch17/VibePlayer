@@ -65,7 +65,6 @@ fun ScanMusicScreen(
                     text = stringResource(R.string.scan_music),
                     style = MaterialTheme.typography.bodyLargeMedium.copy(
                         color = MaterialTheme.colorScheme.textPrimary,
-                        textAlign = TextAlign.Center
                     )
                 )
 

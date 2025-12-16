@@ -14,13 +14,13 @@ import kotlinx.coroutines.launch
 
 sealed interface MainPageEvents {
     data object NavigateToScanMusic : MainPageEvents
-    data class NavigateToNowPlaying(val songId: Long) : MainPageEvents
+    data class NavigateToNowPlaying(val id: Int) : MainPageEvents
 }
 
 sealed interface MainPageActions {
     data object ScanAgain : MainPageActions
     data object NavigateToScanMusic : MainPageActions
-    data class NavigateToNowPlaying(val songId: Long) : MainPageActions
+    data class NavigateToNowPlaying(val id: Int) : MainPageActions
 }
 
 class MainViewModel(
@@ -40,7 +40,9 @@ class MainViewModel(
         when (mainPageActions) {
             MainPageActions.ScanAgain -> scanAgain()
             MainPageActions.NavigateToScanMusic -> navigateToScanMusic()
-            is MainPageActions.NavigateToNowPlaying -> navigateToNowPlaying(songId = mainPageActions.songId)
+            is MainPageActions.NavigateToNowPlaying -> {
+                navigateToNowPlaying(id = mainPageActions.id)
+            }
         }
     }
 
@@ -114,9 +116,9 @@ class MainViewModel(
         }
     }
 
-    private fun navigateToNowPlaying(songId: Long) {
+    private fun navigateToNowPlaying(id: Int) {
         viewModelScope.launch {
-            _mainPageEvents.send(MainPageEvents.NavigateToNowPlaying(songId = songId))
+            _mainPageEvents.send(MainPageEvents.NavigateToNowPlaying(id = id))
         }
     }
 }
