@@ -1,5 +1,6 @@
 package com.example.vibeplayer.core.domain
 
+import androidx.media3.common.MediaItem
 import kotlinx.coroutines.flow.Flow
 
 interface SongRepository {
@@ -12,6 +13,5 @@ interface SongRepository {
     ): Result<List<Song>>
 
     suspend fun getSongById(id: Int): Song
-    suspend fun getPreviousSong(previousId: Int): Song?
-    suspend fun getNextSong(nextId: Int): Song?
+    suspend fun getSongByUri(mediaItem: MediaItem?): Song?
 }

@@ -21,7 +21,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.vibeplayer.R
 import com.example.vibeplayer.core.presentation.designsystem.components.VibePlayerIconShape
@@ -127,7 +126,11 @@ fun ScanMusicScreen(
                     .padding(top = 24.dp),
                 text = stringResource(R.string.scan),
                 isEnabled = !scanMusicUi.isScanning,
+                showTextOnly = false,
                 isScanning = scanMusicUi.isScanning,
+                buttonContentIconImageVector = VibePlayerIcons.Loader,
+                buttonContentIconDescription = stringResource(R.string.loader),
+                buttonContentText = stringResource(R.string.scanning),
                 onclick = {
                     onActions(ScanMusicActions.Scan)
                 }

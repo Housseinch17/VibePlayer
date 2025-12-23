@@ -61,7 +61,7 @@ fun NowPlayingScreen(
         bottomBar = {
             NowPlayingBottomBar(
                 modifier = Modifier.fillMaxWidth(),
-                isPlaying = nowPlayingUiState.isPlaying,
+                isPlaying = nowPlayingUiState.mediaPlayerState.isPlaying,
                 progressIndicator = nowPlayingUiState.progressIndicator,
                 play = {
                     nowPlayingActions(NowPlayingActions.Play)
@@ -70,10 +70,10 @@ fun NowPlayingScreen(
                     nowPlayingActions(NowPlayingActions.Pause)
                 },
                 playNext = {
-                    nowPlayingActions(NowPlayingActions.PlayNextSong)
+                    nowPlayingActions(NowPlayingActions.PlayNext)
                 },
                 playPrevious = {
-                    nowPlayingActions(NowPlayingActions.PlayPreviousSong)
+                    nowPlayingActions(NowPlayingActions.PlayPrevious)
                 }
             )
         }

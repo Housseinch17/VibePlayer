@@ -2,13 +2,17 @@ package com.example.vibeplayer.feature.now_playing.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.vibeplayer.app.domain.NowPlayingData
 import com.example.vibeplayer.app.presentation.navigation.NavigationScreens
 import com.example.vibeplayer.core.domain.PlaybackController
+import com.example.vibeplayer.core.domain.Song
 import com.example.vibeplayer.core.domain.SongRepository
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -20,8 +24,8 @@ sealed interface NowPlayingActions {
     data object NavigateBack : NowPlayingActions
     data object Play : NowPlayingActions
     data object Pause : NowPlayingActions
-    data object PlayNextSong : NowPlayingActions
-    data object PlayPreviousSong : NowPlayingActions
+    data object PlayNext : NowPlayingActions
+    data object PlayPrevious : NowPlayingActions
 }
 
 class NowPlayingViewModel(
@@ -32,11 +36,14 @@ class NowPlayingViewModel(
 
 ) {
     private val _nowPlayingUiState = MutableStateFlow(NowPlayingUiState())
-    val nowPlayingUiState = _nowPlayingUiState.asStateFlow()
-
-    init {
-        setSong()
+    val nowPlayingUiState = _nowPlayingUiState.stateIn(
+        viewModelScope,
+        SharingStarted.Lazily,
+        NowPlayingUiState()
+    ).onStart {
+        setPlayerState()
         setProgressIndicator()
+        setInitialSong()
     }
 
     private val _nowPlayingEvents = Channel<NowPlayingEvents>()
@@ -47,26 +54,35 @@ class NowPlayingViewModel(
             NowPlayingActions.NavigateBack -> navigateBack()
             NowPlayingActions.Pause -> pause()
             NowPlayingActions.Play -> play()
-            NowPlayingActions.PlayNextSong -> playNextSong()
-            NowPlayingActions.PlayPreviousSong -> playPreviousSong()
+            NowPlayingActions.PlayNext -> playNext()
+            NowPlayingActions.PlayPrevious -> playPrevious()
         }
     }
 
     //if the user use back from actions
-    //stop playbackController
+//stop playbackController
+//note: after using stop() if we want to play a song again we have to ensure that prepare() is used
     override fun onCleared() {
         super.onCleared()
         playbackController.stop()
     }
 
-    private fun setSong() {
+    private fun setInitialSong() {
         viewModelScope.launch {
-            val id = navKey.id
-            val song = songRepository.getSongById(id = id)
-            _nowPlayingUiState.update { newState ->
-                newState.copy(
-                    song = song,
-                )
+            when (navKey.nowPlayingData) {
+                is NowPlayingData.Id -> {
+                    val id = navKey.nowPlayingData.id
+                    val song = songRepository.getSongById(id = id + 1)
+                    _nowPlayingUiState.update { newState ->
+                        newState.copy(
+                            song = song,
+                        )
+                    }
+                    playbackController.setMediaItemByIndex(mediaItemsIndex = id)
+                }
+
+                NowPlayingData.Play -> playbackController.play(byMediaOrder = true)
+                NowPlayingData.Shuffle -> playbackController.shuffle()
             }
         }
     }
@@ -83,68 +99,33 @@ class NowPlayingViewModel(
         }
     }
 
+    private fun setPlayerState() {
+        viewModelScope.launch {
+            playbackController.mediaPlayerState.collect { mediaPlayerState ->
+                val song = songRepository.getSongByUri(mediaItem = mediaPlayerState.currentMedia)
+                _nowPlayingUiState.update { newState ->
+                    newState.copy(
+                        mediaPlayerState = mediaPlayerState,
+                        song = song ?: Song()
+                    )
+                }
+            }
+        }
+    }
+
     private fun play() {
-        _nowPlayingUiState.update { newState ->
-            newState.copy(
-                isPlaying = true
-            )
-        }
-        val audioUri = _nowPlayingUiState.value.song.audioUri
-        playbackController.play(audioUri = audioUri!!)
+        playbackController.play()
     }
 
-    private fun playNextSong() {
-        _nowPlayingUiState.update { newState ->
-            newState.copy(
-                isPlaying = false
-            )
-        }
-        viewModelScope.launch {
-            //stop existing if any
-            playbackController.stop()
-            val nextId = _nowPlayingUiState.value.song.id + 1
-            val nextSong = songRepository.getNextSong(nextId = nextId)
-            nextSong?.audioUri?.let { nextAudioUri ->
-                _nowPlayingUiState.update { newState ->
-                    newState.copy(
-                        isPlaying = true,
-                        song = nextSong,
-                    )
-                }
-                playbackController.playNext(audioUri = nextAudioUri)
-            }
-        }
+    private fun playNext() {
+        playbackController.seekToNext()
     }
 
-    private fun playPreviousSong() {
-        _nowPlayingUiState.update { newState ->
-            newState.copy(
-                isPlaying = false
-            )
-        }
-        viewModelScope.launch {
-            //stop existing if any
-            playbackController.stop()
-            val previousId = _nowPlayingUiState.value.song.id - 1
-            val previousSong = songRepository.getPreviousSong(previousId = previousId)
-            previousSong?.audioUri?.let { previousAudioUri ->
-                _nowPlayingUiState.update { newState ->
-                    newState.copy(
-                        isPlaying = true,
-                        song = previousSong
-                    )
-                }
-                playbackController.playNext(audioUri = previousAudioUri)
-            }
-        }
+    private fun playPrevious() {
+        playbackController.seekToPrevious()
     }
 
     private fun pause() {
-        _nowPlayingUiState.update { newState ->
-            newState.copy(
-                isPlaying = false
-            )
-        }
         playbackController.pause()
     }
 
