@@ -5,6 +5,7 @@ import android.content.Context
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
+import androidx.media3.common.MediaItem
 import com.example.vibeplayer.core.database.SongDao
 import com.example.vibeplayer.core.database.toDomainModel
 import com.example.vibeplayer.core.database.toEntity
@@ -96,13 +97,13 @@ class SongRepositoryImpl(
         return songDao.getSongById(id = id).toSong()
     }
 
-    override suspend fun getPreviousSong(previousId: Int): Song? {
-        return songDao.getPreviousSong(previousId = previousId)
+    override suspend fun getSongByUri(mediaItem: MediaItem?): Song? {
+        return mediaItem?.let {
+            val uri = it.convertMediaItemToUri()
+            songDao.getSongByUri(uri)
+        }
     }
 
-    override suspend fun getNextSong(nextId: Int): Song? {
-        return songDao.getNextSong(nextId = nextId)
-    }
 
     private suspend fun fetchSongs(
         duration: Long = 0,
@@ -143,7 +144,8 @@ class SongRepositoryImpl(
             "1"
         )
 
-        val sortOrder = "${MediaStore.Audio.Media.TITLE} ASC"
+        val sortOrder = "${MediaStore.Audio.Media.DURATION} DESC"
+
         context.contentResolver.query(
             collection,
             projection,

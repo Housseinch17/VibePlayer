@@ -33,5 +33,8 @@ songs</string>
     <string name="pause">Pause</string>
     <string name="play_next">Play Next</string>
     <string name="play_previous">Play Previous</string>
+    <string name="search">Search</string>
+    <string name="shuffle">Shuffle</string>
+    <string name="total_songs">%1d Songs</string>
 
 </resources>

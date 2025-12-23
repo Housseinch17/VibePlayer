@@ -83,10 +83,12 @@ class ScanMusicViewModel(
                     UiText.StringResource(R.string.scan_error)
                 }
             }
+            //delay for scanning
+            delay(1.seconds)
             _scanMusicUi.update { newState ->
                 newState.copy(
-                    isScanning = false,
-                    snackbarMessage = snackbarMessage
+                    snackbarMessage = snackbarMessage,
+                    isScanning = false
                 )
             }
             //delay to show the snackbar

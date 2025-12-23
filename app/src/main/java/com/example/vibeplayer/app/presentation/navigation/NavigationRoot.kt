@@ -17,6 +17,7 @@ import com.example.vibeplayer.feature.main.presentation.MainViewModel
 import com.example.vibeplayer.feature.now_playing.presentation.NowPlayingEvents
 import com.example.vibeplayer.feature.now_playing.presentation.NowPlayingViewModel
 import com.example.vibeplayer.feature.now_playing.presentation.NowPlayingScreen
+import com.example.vibeplayer.feature.now_playing.presentation.NowPlayingUiState
 import com.example.vibeplayer.feature.permission.presentation.PermissionEvents
 import com.example.vibeplayer.feature.permission.presentation.PermissionScreen
 import com.example.vibeplayer.feature.permission.presentation.PermissionViewModel
@@ -75,9 +76,10 @@ fun NavigationRoot(
                         MainPageEvents.NavigateToScanMusic -> backStack.add(NavigationScreens.ScanMusic)
                         is MainPageEvents.NavigateToNowPlaying -> {
                             backStack.add(
-                                NavigationScreens.NowPlaying(events.id)
+                                NavigationScreens.NowPlaying(events.nowPlayingData)
                             )
                         }
+                        MainPageEvents.NavigateToSearch -> backStack.add(NavigationScreens.Search)
                     }
                 }
 
@@ -109,7 +111,9 @@ fun NavigationRoot(
                 val nowPlayingViewModel = koinViewModel<NowPlayingViewModel> {
                     parametersOf(key)
                 }
-                val nowPlayingUiState by nowPlayingViewModel.nowPlayingUiState.collectAsStateWithLifecycle()
+                val nowPlayingUiState by nowPlayingViewModel.nowPlayingUiState.collectAsStateWithLifecycle(
+                    initialValue = NowPlayingUiState()
+                )
 
                 ObserveAsEvents(nowPlayingViewModel.nowPlayingEvents) { events ->
                     when (events) {
@@ -122,6 +126,10 @@ fun NavigationRoot(
                     nowPlayingUiState = nowPlayingUiState,
                     nowPlayingActions = nowPlayingViewModel::onActions
                 )
+            }
+
+            entry<NavigationScreens.Search> {
+
             }
         }
     )

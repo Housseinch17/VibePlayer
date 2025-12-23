@@ -1,5 +1,6 @@
 package com.example.vibeplayer.core.database
 
+import android.net.Uri
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Query
@@ -22,11 +23,8 @@ interface SongDao {
     @Query("DELETE FROM songentity")
     suspend fun removeAllSongs()
 
-    @Query("SELECT * FROM songentity WHERE id = :previousId ORDER BY id DESC LIMIT 1")
-    suspend fun getPreviousSong(previousId: Int): Song?
-
-    @Query("SELECT * FROM songentity WHERE id = :nextId ORDER BY id DESC LIMIT 1")
-    suspend fun getNextSong(nextId: Int): Song?
+    @Query("Select * From SongEntity where audioUri = :uri limit 1")
+    suspend fun getSongByUri(uri: Uri?): Song?
 
     @Upsert
     suspend fun upsertAll(songs: List<SongEntity>)

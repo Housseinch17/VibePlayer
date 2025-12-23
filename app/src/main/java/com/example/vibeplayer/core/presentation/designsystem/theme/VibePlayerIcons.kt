@@ -13,46 +13,54 @@ object VibePlayerIcons {
 
     val Scan: ImageVector
         @Composable
-        get() = ImageVector.Companion.vectorResource(R.drawable.scan)
+        get() = ImageVector.vectorResource(R.drawable.scan)
 
     val Play: ImageVector
         @Composable
-        get() = ImageVector.Companion.vectorResource(R.drawable.play)
+        get() = ImageVector.vectorResource(R.drawable.play)
 
     val Pause: ImageVector
         @Composable
-        get() = ImageVector.Companion.vectorResource(R.drawable.pause)
+        get() = ImageVector.vectorResource(R.drawable.pause)
 
     val SkipNext: ImageVector
         @Composable
-        get() = ImageVector.Companion.vectorResource(R.drawable.skip_next)
+        get() = ImageVector.vectorResource(R.drawable.skip_next)
 
     val SkipPrevious: ImageVector
         @Composable
-        get() = ImageVector.Companion.vectorResource(R.drawable.skip_previous)
+        get() = ImageVector.vectorResource(R.drawable.skip_previous)
 
     val ArrowLeft: ImageVector
         @Composable
-        get() = ImageVector.Companion.vectorResource(R.drawable.arrow_left)
+        get() = ImageVector.vectorResource(R.drawable.arrow_left)
 
     val ArrowUp: ImageVector
         @Composable
-        get() = ImageVector.Companion.vectorResource(R.drawable.arrow_up)
+        get() = ImageVector.vectorResource(R.drawable.arrow_up)
 
     val ChevronDown: ImageVector
         @Composable
-        get() = ImageVector.Companion.vectorResource(R.drawable.chevron_down)
+        get() = ImageVector.vectorResource(R.drawable.chevron_down)
 
     val Loader: ImageVector
         @Composable
-        get() = ImageVector.Companion.vectorResource(R.drawable.loader)
+        get() = ImageVector.vectorResource(R.drawable.loader)
 
     val SelectedRadioButton: ImageVector
         @Composable
-        get() = ImageVector.Companion.vectorResource(R.drawable.radio_button_selected)
+        get() = ImageVector.vectorResource(R.drawable.radio_button_selected)
 
     val UnSelectedRadioButton: ImageVector
         @Composable
-        get() = ImageVector.Companion.vectorResource(R.drawable.radio_button_unselected)
+        get() = ImageVector.vectorResource(R.drawable.radio_button_unselected)
+    
+    val Search: ImageVector
+    @Composable
+    get() = ImageVector.vectorResource(R.drawable.search)
+
+    val Shuffle: ImageVector
+        @Composable
+        get() = ImageVector.vectorResource(R.drawable.shuffle)
 
 }

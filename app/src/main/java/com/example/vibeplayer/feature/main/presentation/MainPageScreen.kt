@@ -13,7 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.HorizontalDivider
@@ -32,10 +32,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.vibeplayer.R
+import com.example.vibeplayer.app.domain.NowPlayingData
 import com.example.vibeplayer.core.domain.Song
 import com.example.vibeplayer.core.presentation.designsystem.components.VibePlayerAsyncImage
+import com.example.vibeplayer.core.presentation.designsystem.components.VibePlayerOutlinedButtonWithIcon
 import com.example.vibeplayer.core.presentation.designsystem.components.VibePlayerIconShape
 import com.example.vibeplayer.core.presentation.designsystem.components.VibePlayerPrimaryButton
 import com.example.vibeplayer.core.presentation.designsystem.components.rotationIfScanning
@@ -75,9 +78,13 @@ fun MainPageScreen(
                     .fillMaxWidth()
                     .padding(start = 16.dp, top = 10.dp, bottom = 10.dp, end = 10.dp),
                 isEnabled = mainPageUiState.songState !is SongState.Scanning,
-                clickScan = {
+                onScanClick = {
                     onActions(MainPageActions.NavigateToScanMusic)
-                }
+                },
+                onSearchClick = {
+                    onActions(MainPageActions.NavigateToSearch)
+                },
+                isSearchVisible = mainPageUiState.songState is SongState.TrackList
             )
         },
         floatingActionButton = {
@@ -118,9 +125,22 @@ fun MainPageScreen(
                         modifier = Modifier,
                         state = lazyListState,
                         songList = mainPageUiState.songState.songList,
+                        totalSongs = mainPageUiState.totalSong,
                         onSongItemClick = { id ->
-                            onActions(MainPageActions.NavigateToNowPlaying(id = id))
-                        }
+                            onActions(
+                                MainPageActions.NavigateToNowPlaying(
+                                    nowPlayingData = NowPlayingData.Id(
+                                        id = id
+                                    )
+                                )
+                            )
+                        },
+                        onShuffleClick = {
+                            onActions(MainPageActions.NavigateAndShuffle)
+                        },
+                        onPlayClick = {
+                            onActions(MainPageActions.NavigateAndPlay)
+                        },
                     )
                 }
             }
@@ -134,25 +154,60 @@ fun TrackListState(
     modifier: Modifier = Modifier,
     state: LazyListState,
     onSongItemClick: (Int) -> Unit,
-    songList: List<Song>
+    songList: List<Song>,
+    totalSongs: Int,
+    onShuffleClick: () -> Unit,
+    onPlayClick: () -> Unit,
 ) {
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            VibePlayerOutlinedButtonWithIcon(
+                modifier = Modifier.weight(1f),
+                buttonContentIconDescription = stringResource(R.string.shuffle),
+                buttonContentIconImageVector = VibePlayerIcons.Shuffle,
+                buttonContentText = stringResource(R.string.shuffle),
+                onClick = onShuffleClick
+            )
+
+            VibePlayerOutlinedButtonWithIcon(
+                modifier = Modifier.weight(1f),
+                buttonContentIconDescription = stringResource(R.string.play),
+                buttonContentIconImageVector = VibePlayerIcons.Play,
+                buttonContentText = stringResource(R.string.play),
+                onClick = onPlayClick,
+            )
+        }
+
+        Text(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp),
+            text = stringResource(R.string.total_songs, totalSongs),
+            style = MaterialTheme.typography.bodyLargeMedium.copy(
+                textAlign = TextAlign.Start
+            )
+        )
+
         LazyColumn(
             modifier = Modifier.fillMaxWidth(),
             state = state,
         ) {
-            items(songList, key = {
-                it.id
-            }) { song ->
+            itemsIndexed(
+                items = songList,
+            ) { index, song ->
                 SongItem(
                     modifier = Modifier,
                     song = song,
                     onSongItemClick = {
-                        onSongItemClick(song.id)
+                        onSongItemClick(index)
                     }
                 )
                 HorizontalDivider(
@@ -280,15 +335,17 @@ fun SongItem(
 fun MainPageTopBar(
     modifier: Modifier = Modifier,
     isEnabled: Boolean,
-    clickScan: () -> Unit
+    onScanClick: () -> Unit,
+    onSearchClick: () -> Unit,
+    isSearchVisible: Boolean,
 ) {
     Row(
         modifier = modifier,
-        horizontalArrangement = Arrangement.SpaceBetween,
+        horizontalArrangement = Arrangement.Start,
         verticalAlignment = Alignment.CenterVertically
     ) {
         MainPageTextWithLeadingIcon(
-            modifier = Modifier,
+            modifier = Modifier.weight(1f),
             imageVector = VibePlayerIcons.Logo,
             iconDescription = stringResource(R.string.logo_icon),
             text = stringResource(R.string.app_name)
@@ -299,8 +356,19 @@ fun MainPageTopBar(
             imageVector = VibePlayerIcons.Scan,
             iconDescription = stringResource(R.string.scan),
             isEnabled = isEnabled,
-            onClick = clickScan
+            onClick = onScanClick
         )
+
+        if (isSearchVisible) {
+            VibePlayerIconShape(
+                modifier = Modifier.padding(start = 10.dp),
+                imageVector = VibePlayerIcons.Search,
+                iconDescription = stringResource(R.string.search),
+                isEnabled = isEnabled,
+                onClick = onSearchClick
+            )
+        }
+
     }
 }
 
