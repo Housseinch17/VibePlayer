@@ -13,6 +13,7 @@ interface PlaybackController {
     fun shuffle()
     fun pause()
     fun stop()
+    fun release()
     fun seekTo(position: Long)
     fun seekToNext()
     fun seekToPrevious()

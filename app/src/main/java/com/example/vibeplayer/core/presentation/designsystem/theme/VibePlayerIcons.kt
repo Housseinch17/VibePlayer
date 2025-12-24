@@ -63,4 +63,8 @@ object VibePlayerIcons {
         @Composable
         get() = ImageVector.vectorResource(R.drawable.shuffle)
 
+    val Clear: ImageVector
+        @Composable
+        get() = ImageVector.vectorResource(R.drawable.clear)
+
 }

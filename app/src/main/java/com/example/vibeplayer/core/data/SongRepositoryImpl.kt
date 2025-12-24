@@ -17,6 +17,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -82,7 +83,10 @@ class SongRepositoryImpl(
             val songsToEntity = songs.map {
                 it.toEntity()
             }
+            //remove song
             songDao.removeAllSongs()
+            //reset primary key that is already generated
+            songDao.deletePrimaryKeyIndex()
             songDao.upsertAll(songsToEntity)
             Result.Success(data = songs)
         } catch (e: Exception) {
@@ -93,17 +97,26 @@ class SongRepositoryImpl(
         }
     }
 
-    override suspend fun getSongById(id: Int): Song {
-        return songDao.getSongById(id = id).toSong()
-    }
-
-    override suspend fun getSongByUri(mediaItem: MediaItem?): Song? {
+    override suspend fun getSongByMediaItem(mediaItem: MediaItem?): Song? {
         return mediaItem?.let {
             val uri = it.convertMediaItemToUri()
-            songDao.getSongByUri(uri)
+            songDao.getSongByUri(uri)?.toSong()
         }
     }
 
+    override suspend fun getSongByUri(uri: Uri?): Song? {
+        return uri?.let {
+            songDao.getSongByUri(uri)?.toSong()
+        }
+    }
+
+    override suspend fun getSongsByTitleOrArtistName(searchQuery: String): Flow<List<Song>> {
+        if (searchQuery.isBlank()) return flowOf(emptyList())
+
+        return songDao.getSongsByTitleOrArtistName(searchQuery.trim()).map {
+            it.toDomainModel()
+        }
+    }
 
     private suspend fun fetchSongs(
         duration: Long = 0,

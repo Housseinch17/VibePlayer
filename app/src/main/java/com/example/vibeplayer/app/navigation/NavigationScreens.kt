@@ -1,4 +1,4 @@
-package com.example.vibeplayer.app.presentation.navigation
+package com.example.vibeplayer.app.navigation
 
 import androidx.navigation3.runtime.NavKey
 import com.example.vibeplayer.app.domain.NowPlayingData

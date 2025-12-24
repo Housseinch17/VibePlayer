@@ -36,5 +36,8 @@ songs</string>
     <string name="search">Search</string>
     <string name="shuffle">Shuffle</string>
     <string name="total_songs">%1d Songs</string>
+    <string name="cancel">Cancel</string>
+    <string name="clear">Clear</string>
+    <string name="no_results_found">No results found</string>
 
 </resources>

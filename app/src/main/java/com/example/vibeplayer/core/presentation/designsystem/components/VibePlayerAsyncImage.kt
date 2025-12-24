@@ -2,6 +2,7 @@ package com.example.vibeplayer.core.presentation.designsystem.components
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
@@ -20,6 +21,7 @@ fun VibePlayerAsyncImage(
             .error(errorDrawable)
             .crossfade(true)
             .build(),
-        contentDescription = contentDescription
+        contentDescription = contentDescription,
+        contentScale = ContentScale.FillBounds
     )
 }

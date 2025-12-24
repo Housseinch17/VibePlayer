@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
 sealed interface MainPageEvents {
     data object NavigateToScanMusic : MainPageEvents
@@ -43,12 +44,10 @@ class MainViewModel(
         initialSetup()
     }
 
-    //if the user use back from actions
-    //stop playbackController
-    //note: after using stop() if we want to play a song again we have to ensure that prepare() is used
+    //after MainPage is destroyed the Exoplayer is not needed anymore
     override fun onCleared() {
         super.onCleared()
-        playbackController.stop()
+        playbackController.release()
     }
 
     fun onActions(mainPageActions: MainPageActions) {
@@ -127,6 +126,7 @@ class MainViewModel(
                 if (songs.isNotEmpty()) {
                     playbackController.setPlayList(songs)
                 }
+                Timber.tag("MyTag").d("songs: $songs")
                 _mainPageUiState.update { newState ->
                     newState.copy(
                         songState = if (songs.isEmpty()) SongState.Empty else SongState.TrackList(

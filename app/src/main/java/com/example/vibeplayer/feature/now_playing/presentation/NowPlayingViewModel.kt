@@ -3,7 +3,7 @@ package com.example.vibeplayer.feature.now_playing.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.vibeplayer.app.domain.NowPlayingData
-import com.example.vibeplayer.app.presentation.navigation.NavigationScreens
+import com.example.vibeplayer.app.navigation.NavigationScreens
 import com.example.vibeplayer.core.domain.PlaybackController
 import com.example.vibeplayer.core.domain.Song
 import com.example.vibeplayer.core.domain.SongRepository
@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
 sealed interface NowPlayingEvents {
     data object NavigateBack : NowPlayingEvents
@@ -36,15 +37,15 @@ class NowPlayingViewModel(
 
 ) {
     private val _nowPlayingUiState = MutableStateFlow(NowPlayingUiState())
-    val nowPlayingUiState = _nowPlayingUiState.stateIn(
-        viewModelScope,
-        SharingStarted.Lazily,
-        NowPlayingUiState()
-    ).onStart {
+    val nowPlayingUiState = _nowPlayingUiState.onStart {
         setPlayerState()
         setProgressIndicator()
         setInitialSong()
-    }
+    }.stateIn(
+        viewModelScope,
+        SharingStarted.Lazily,
+        NowPlayingUiState()
+    )
 
     private val _nowPlayingEvents = Channel<NowPlayingEvents>()
     val nowPlayingEvents = _nowPlayingEvents.receiveAsFlow()
@@ -70,15 +71,18 @@ class NowPlayingViewModel(
     private fun setInitialSong() {
         viewModelScope.launch {
             when (navKey.nowPlayingData) {
-                is NowPlayingData.Id -> {
-                    val id = navKey.nowPlayingData.id
-                    val song = songRepository.getSongById(id = id + 1)
+                is NowPlayingData.PlayByUri -> {
+                    val uri = navKey.nowPlayingData.uri
+                    val song = songRepository.getSongByUri(uri = uri)
                     _nowPlayingUiState.update { newState ->
                         newState.copy(
-                            song = song,
+                            song = song ?: Song(),
                         )
                     }
-                    playbackController.setMediaItemByIndex(mediaItemsIndex = id)
+                    song?.let {
+                        Timber.tag("MyTag").d("started: ${song.id}")
+                        playbackController.setMediaItemByIndex(mediaItemsIndex = song.id - 1)
+                    }
                 }
 
                 NowPlayingData.Play -> playbackController.play(byMediaOrder = true)
@@ -102,7 +106,8 @@ class NowPlayingViewModel(
     private fun setPlayerState() {
         viewModelScope.launch {
             playbackController.mediaPlayerState.collect { mediaPlayerState ->
-                val song = songRepository.getSongByUri(mediaItem = mediaPlayerState.currentMedia)
+                val song =
+                    songRepository.getSongByMediaItem(mediaItem = mediaPlayerState.currentMedia)
                 _nowPlayingUiState.update { newState ->
                     newState.copy(
                         mediaPlayerState = mediaPlayerState,
