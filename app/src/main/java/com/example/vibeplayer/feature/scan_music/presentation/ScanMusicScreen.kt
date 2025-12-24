@@ -126,7 +126,7 @@ fun ScanMusicScreen(
                     .padding(top = 24.dp),
                 text = stringResource(R.string.scan),
                 isEnabled = !scanMusicUi.isScanning,
-                showTextOnly = false,
+                showTextOnly = !scanMusicUi.isScanning,
                 isScanning = scanMusicUi.isScanning,
                 buttonContentIconImageVector = VibePlayerIcons.Loader,
                 buttonContentIconDescription = stringResource(R.string.loader),

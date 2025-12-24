@@ -16,7 +16,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import timber.log.Timber
 
 class PlaybackControllerImpl(
     applicationContext: Context
@@ -81,7 +80,6 @@ class PlaybackControllerImpl(
         }
         //reaching last song and clicking play nothing will play without this condition
         if (player.playbackState == Player.STATE_ENDED) {
-            Timber.tag("MyTag").d("ENDED")
             player.seekToDefaultPosition()
         }
         //after using stop() it will enter STATE_IDLE so if we try to play without prepare() nothing will work
@@ -112,6 +110,10 @@ class PlaybackControllerImpl(
 
     override fun stop() {
         player.stop()
+    }
+
+    override fun release() {
+        player.release()
     }
 
     override fun seekTo(position: Long) {

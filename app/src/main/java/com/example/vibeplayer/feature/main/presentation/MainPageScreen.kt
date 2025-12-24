@@ -1,5 +1,6 @@
 package com.example.vibeplayer.feature.main.presentation
 
+import android.net.Uri
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -13,7 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.HorizontalDivider
@@ -38,8 +39,8 @@ import com.example.vibeplayer.R
 import com.example.vibeplayer.app.domain.NowPlayingData
 import com.example.vibeplayer.core.domain.Song
 import com.example.vibeplayer.core.presentation.designsystem.components.VibePlayerAsyncImage
-import com.example.vibeplayer.core.presentation.designsystem.components.VibePlayerOutlinedButtonWithIcon
 import com.example.vibeplayer.core.presentation.designsystem.components.VibePlayerIconShape
+import com.example.vibeplayer.core.presentation.designsystem.components.VibePlayerOutlinedButtonWithIcon
 import com.example.vibeplayer.core.presentation.designsystem.components.VibePlayerPrimaryButton
 import com.example.vibeplayer.core.presentation.designsystem.components.rotationIfScanning
 import com.example.vibeplayer.core.presentation.designsystem.theme.VibePlayerIcons
@@ -126,11 +127,11 @@ fun MainPageScreen(
                         state = lazyListState,
                         songList = mainPageUiState.songState.songList,
                         totalSongs = mainPageUiState.totalSong,
-                        onSongItemClick = { id ->
+                        onSongItemClick = { uri ->
                             onActions(
                                 MainPageActions.NavigateToNowPlaying(
-                                    nowPlayingData = NowPlayingData.Id(
-                                        id = id
+                                    nowPlayingData = NowPlayingData.PlayByUri(
+                                        uri = uri
                                     )
                                 )
                             )
@@ -153,7 +154,7 @@ fun MainPageScreen(
 fun TrackListState(
     modifier: Modifier = Modifier,
     state: LazyListState,
-    onSongItemClick: (Int) -> Unit,
+    onSongItemClick: (Uri?) -> Unit,
     songList: List<Song>,
     totalSongs: Int,
     onShuffleClick: () -> Unit,
@@ -200,14 +201,17 @@ fun TrackListState(
             modifier = Modifier.fillMaxWidth(),
             state = state,
         ) {
-            itemsIndexed(
+            items(
                 items = songList,
-            ) { index, song ->
+                key = { song ->
+                    song.id
+                },
+            ) { song ->
                 SongItem(
                     modifier = Modifier,
                     song = song,
                     onSongItemClick = {
-                        onSongItemClick(index)
+                        onSongItemClick(song.audioUri)
                     }
                 )
                 HorizontalDivider(

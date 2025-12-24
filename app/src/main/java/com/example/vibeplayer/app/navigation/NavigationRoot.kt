@@ -1,4 +1,4 @@
-package com.example.vibeplayer.app.presentation.navigation
+package com.example.vibeplayer.app.navigation
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -15,15 +15,18 @@ import com.example.vibeplayer.feature.main.presentation.MainPageEvents
 import com.example.vibeplayer.feature.main.presentation.MainPageScreen
 import com.example.vibeplayer.feature.main.presentation.MainViewModel
 import com.example.vibeplayer.feature.now_playing.presentation.NowPlayingEvents
-import com.example.vibeplayer.feature.now_playing.presentation.NowPlayingViewModel
 import com.example.vibeplayer.feature.now_playing.presentation.NowPlayingScreen
 import com.example.vibeplayer.feature.now_playing.presentation.NowPlayingUiState
+import com.example.vibeplayer.feature.now_playing.presentation.NowPlayingViewModel
 import com.example.vibeplayer.feature.permission.presentation.PermissionEvents
 import com.example.vibeplayer.feature.permission.presentation.PermissionScreen
 import com.example.vibeplayer.feature.permission.presentation.PermissionViewModel
 import com.example.vibeplayer.feature.scan_music.presentation.ScanMusicEvents
 import com.example.vibeplayer.feature.scan_music.presentation.ScanMusicScreen
 import com.example.vibeplayer.feature.scan_music.presentation.ScanMusicViewModel
+import com.example.vibeplayer.feature.search.presentation.SearchEvents
+import com.example.vibeplayer.feature.search.presentation.SearchScreen
+import com.example.vibeplayer.feature.search.presentation.SearchViewModel
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
 
@@ -52,8 +55,8 @@ fun NavigationRoot(
                 ObserveAsEvents(permissionViewModel.permissionEvents) { permissionEvents ->
                     when (permissionEvents) {
                         PermissionEvents.NavigateMainPage -> {
-                            backStack.remove(NavigationScreens.Permission)
                             backStack.add(NavigationScreens.MainPage)
+                            backStack.remove(NavigationScreens.Permission)
                         }
 
                     }
@@ -79,6 +82,7 @@ fun NavigationRoot(
                                 NavigationScreens.NowPlaying(events.nowPlayingData)
                             )
                         }
+
                         MainPageEvents.NavigateToSearch -> backStack.add(NavigationScreens.Search)
                     }
                 }
@@ -129,7 +133,28 @@ fun NavigationRoot(
             }
 
             entry<NavigationScreens.Search> {
+                val searchViewModel = koinViewModel<SearchViewModel>()
+                val searchUiState by searchViewModel.searchUiState.collectAsStateWithLifecycle()
 
+                ObserveAsEvents(searchViewModel.searchEvents) { events ->
+                    when (events) {
+                        SearchEvents.NavigateBack -> backStack.removeLastOrNull()
+                        is SearchEvents.NavigateToNowPlaying -> {
+                            backStack.add(
+                                NavigationScreens.NowPlaying(
+                                    nowPlayingData = events.nowPlayingData
+                                )
+                            )
+                            backStack.remove(NavigationScreens.Search)
+                        }
+                    }
+                }
+
+                SearchScreen(
+                    modifier = Modifier.fillMaxSize(),
+                    searchUiState = searchUiState,
+                    searchActions = searchViewModel::onActions
+                )
             }
         }
     )
