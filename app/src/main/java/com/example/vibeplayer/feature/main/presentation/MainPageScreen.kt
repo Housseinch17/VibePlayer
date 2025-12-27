@@ -40,6 +40,7 @@ import com.example.vibeplayer.app.domain.NowPlayingData
 import com.example.vibeplayer.core.domain.Song
 import com.example.vibeplayer.core.presentation.designsystem.components.VibePlayerAsyncImage
 import com.example.vibeplayer.core.presentation.designsystem.components.VibePlayerIconShape
+import com.example.vibeplayer.core.presentation.designsystem.components.VibePlayerMiniBar
 import com.example.vibeplayer.core.presentation.designsystem.components.VibePlayerOutlinedButtonWithIcon
 import com.example.vibeplayer.core.presentation.designsystem.components.VibePlayerPrimaryButton
 import com.example.vibeplayer.core.presentation.designsystem.components.rotationIfScanning
@@ -60,6 +61,7 @@ fun MainPageScreen(
     modifier: Modifier = Modifier,
     mainPageUiState: MainPageUiState,
     onActions: (MainPageActions) -> Unit,
+    isMinimized: Boolean,
 ) {
     val scope = rememberCoroutineScope()
     val lazyListState = rememberLazyListState()
@@ -98,6 +100,35 @@ fun MainPageScreen(
                     }
                 }
             )
+        },
+        bottomBar = {
+            if (isMinimized) {
+                onActions(MainPageActions.SetCurrentSong)
+                VibePlayerMiniBar(
+                    modifier = Modifier,
+                    song = mainPageUiState.currentSong,
+                    isPlaying = mainPageUiState.mediaPlayerState.isPlaying,
+                    play = {
+                        onActions(MainPageActions.Play)
+                    },
+                    pause = {
+                        onActions(MainPageActions.Pause)
+                    },
+                    playNext = {
+                        onActions(MainPageActions.PlayNext)
+                    },
+                    progressIndicator = mainPageUiState.progressIndicatorForLinearProgress,
+                    onClick = { uri->
+                        onActions(
+                            MainPageActions.NavigateToNowPlaying(
+                                nowPlayingData = NowPlayingData.PlayByUri(
+                                    uri = uri
+                                )
+                            )
+                        )
+                    },
+                )
+            }
         }
     ) { innerPadding ->
         Column(

@@ -43,7 +43,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             VibePlayerTheme {
                 //End SplashScreen visibility
-                mainViewModel.onActions(MainEvents.EndSplashScreenVisibility)
+                mainViewModel.onActions(MainActions.EndSplashScreenVisibility)
                 val state by mainViewModel.mainState.collectAsStateWithLifecycle()
                 val startDestination =
                     if (hasGranted) NavigationScreens.MainPage else NavigationScreens.Permission
@@ -56,7 +56,7 @@ class MainActivity : ComponentActivity() {
                             modifier = Modifier
                                 .fillMaxSize()
                                 .padding(innerPadding),
-                            startDestination = startDestination
+                            startDestination = startDestination,
                         )
                     }
                 }

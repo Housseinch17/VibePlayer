@@ -54,10 +54,22 @@ object VibePlayerIcons {
     val UnSelectedRadioButton: ImageVector
         @Composable
         get() = ImageVector.vectorResource(R.drawable.radio_button_unselected)
-    
+
     val Search: ImageVector
-    @Composable
-    get() = ImageVector.vectorResource(R.drawable.search)
+        @Composable
+        get() = ImageVector.vectorResource(R.drawable.search)
+
+    val RepeatAll: ImageVector
+        @Composable
+        get() = ImageVector.vectorResource(R.drawable.repeat_all)
+
+    val RepeatOne: ImageVector
+        @Composable
+        get() = ImageVector.vectorResource(R.drawable.repeat_one)
+
+    val RepeatOff: ImageVector
+        @Composable
+        get() = ImageVector.vectorResource(R.drawable.repeat_off)
 
     val Shuffle: ImageVector
         @Composable
