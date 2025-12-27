@@ -3,6 +3,10 @@ package com.example.vibeplayer.core.data
 import android.content.Context
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
+import androidx.media3.common.Player.REPEAT_MODE_ALL
+import androidx.media3.common.Player.REPEAT_MODE_OFF
+import androidx.media3.common.Player.REPEAT_MODE_ONE
+import androidx.media3.common.Timeline
 import androidx.media3.exoplayer.ExoPlayer
 import com.example.vibeplayer.core.domain.MediaPlayerState
 import com.example.vibeplayer.core.domain.PlaybackController
@@ -23,37 +27,77 @@ class PlaybackControllerImpl(
     private val player = ExoPlayer.Builder(applicationContext).build()
     private val _mediaPlayerState = MutableStateFlow(MediaPlayerState())
     override val mediaPlayerState: StateFlow<MediaPlayerState> = _mediaPlayerState.asStateFlow()
+
     val listener = object : Player.Listener {
-        override fun onEvents(player: Player, events: Player.Events) {
-            super.onEvents(player, events)
-            with(player) {
+        override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+            _mediaPlayerState.update { newState ->
+                newState.copy(currentMedia = mediaItem)
+            }
+        }
+
+        override fun onTimelineChanged(timeline: Timeline, reason: Int) {
+            super.onTimelineChanged(timeline, reason)
+            val duration = player.duration.coerceAtLeast(0L)
+            _mediaPlayerState.update { newState ->
+                newState.copy(
+                    duration = duration
+                )
+            }
+        }
+
+        override fun onPlaybackStateChanged(playbackState: Int) {
+            if (playbackState == Player.STATE_READY) {
                 _mediaPlayerState.update { newState ->
-                    newState.copy(
-                        isPlaying = isPlaying,
-                        duration = duration.coerceAtLeast(0L),
-                        currentMedia = player.currentMediaItem
-                    )
+                    newState.copy(duration = player.duration.coerceAtLeast(0L))
                 }
             }
         }
+
+
+        override fun onIsPlayingChanged(isPlaying: Boolean) {
+            super.onIsPlayingChanged(isPlaying)
+            _mediaPlayerState.update { newState ->
+                newState.copy(
+                    isPlaying = isPlaying
+                )
+            }
+        }
+
+        override fun onShuffleModeEnabledChanged(shuffleModeEnabled: Boolean) {
+            super.onShuffleModeEnabledChanged(shuffleModeEnabled)
+            _mediaPlayerState.update { newState ->
+                newState.copy(
+                    isShuffled = shuffleModeEnabled
+                )
+            }
+        }
+
+        override fun onRepeatModeChanged(repeatMode: Int) {
+            super.onRepeatModeChanged(repeatMode)
+            _mediaPlayerState.update { newState ->
+                newState.copy(
+                    repeatMode = repeatMode
+                )
+            }
+        }
+
+    }
+
+    init {
+        player.addListener(listener)
     }
 
     override val currentProgressIndicator: Flow<Float> = callbackFlow {
         val job = launch {
             while (true) {
-                if (player.isPlaying && player.duration > 0) {
-                    val progress =
-                        player.currentPosition.toFloat() / player.duration.toFloat()
-                    trySend(progress)
-                }
+                val progress = player.currentPosition.toFloat()
+                trySend(progress)
                 delay(500)
             }
         }
-        player.addListener(listener)
 
         awaitClose {
             job.cancel()
-            player.removeListener(listener)
         }
     }
 
@@ -70,12 +114,27 @@ class PlaybackControllerImpl(
     }
 
     override fun setMediaItemByIndex(mediaItemsIndex: Int) {
-        player.seekToDefaultPosition(mediaItemsIndex)
+        //here setting the media item to the current playing media item
+        //will restart it which we don't need that
+        //so if the media items to be set is the same as the current media
+        //just resume it
+        if (player.currentMediaItemIndex != mediaItemsIndex) {
+            player.seekToDefaultPosition(mediaItemsIndex)
+        } else {
+            if (!player.isPlaying) {
+                player.play()
+            }
+        }
+    }
+
+    override fun currentMediaItem(): MediaItem? {
+        return player.currentMediaItem
     }
 
     override fun play(byMediaOrder: Boolean) {
         //start from the first media in playList
-        if(byMediaOrder){
+        if (byMediaOrder) {
+            player.shuffleModeEnabled = false
             player.seekToDefaultPosition(0)
         }
         //reaching last song and clicking play nothing will play without this condition
@@ -102,6 +161,16 @@ class PlaybackControllerImpl(
             player.prepare()
         }
         player.play()
+    }
+
+    override fun repeatMode() {
+        val nextRepeatMode = when (player.repeatMode) {
+            REPEAT_MODE_OFF -> REPEAT_MODE_ALL
+            REPEAT_MODE_ALL -> REPEAT_MODE_ONE
+            REPEAT_MODE_ONE -> REPEAT_MODE_OFF
+            else -> REPEAT_MODE_OFF
+        }
+        player.repeatMode = nextRepeatMode
     }
 
     override fun pause() {

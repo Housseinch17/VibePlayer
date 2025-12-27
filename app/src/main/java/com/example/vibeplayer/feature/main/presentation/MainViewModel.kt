@@ -5,15 +5,17 @@ import androidx.lifecycle.viewModelScope
 import com.example.vibeplayer.app.domain.NowPlayingData
 import com.example.vibeplayer.core.domain.PlaybackController
 import com.example.vibeplayer.core.domain.Result
+import com.example.vibeplayer.core.domain.Song
 import com.example.vibeplayer.core.domain.SongRepository
 import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import timber.log.Timber
 
 sealed interface MainPageEvents {
     data object NavigateToScanMusic : MainPageEvents
@@ -28,6 +30,10 @@ sealed interface MainPageActions {
     data object NavigateToSearch : MainPageActions
     data object NavigateAndPlay : MainPageActions
     data object NavigateAndShuffle : MainPageActions
+    data object SetCurrentSong: MainPageActions
+    data object Play : MainPageActions
+    data object Pause : MainPageActions
+    data object PlayNext : MainPageActions
 }
 
 class MainViewModel(
@@ -35,14 +41,19 @@ class MainViewModel(
     private val playbackController: PlaybackController,
 ) : ViewModel() {
     private val _mainPageUiState = MutableStateFlow(MainPageUiState())
-    val mainPageUiState = _mainPageUiState.asStateFlow()
-
+    val mainPageUiState = _mainPageUiState.onStart {
+        viewModelScope.launch {
+        initialSetup()
+        setPlayerState()
+        setProgressIndicator()
+        }
+    }.stateIn(
+        viewModelScope,
+        SharingStarted.Lazily,
+        MainPageUiState()
+    )
     private val _mainPageEvents = Channel<MainPageEvents>()
     val mainPageEvents = _mainPageEvents.receiveAsFlow()
-
-    init {
-        initialSetup()
-    }
 
     //after MainPage is destroyed the Exoplayer is not needed anymore
     override fun onCleared() {
@@ -64,6 +75,10 @@ class MainViewModel(
 
             MainPageActions.NavigateAndPlay -> navigateAndPlay()
             MainPageActions.NavigateAndShuffle -> navigateAndShuffle()
+            MainPageActions.SetCurrentSong -> setCurrentSongPlaying()
+            MainPageActions.Pause -> pause()
+            MainPageActions.Play -> play()
+            MainPageActions.PlayNext -> playNext()
         }
     }
 
@@ -79,6 +94,60 @@ class MainViewModel(
             }.await()
             getSongs()
         }
+    }
+
+    private fun setProgressIndicator() {
+        viewModelScope.launch {
+            playbackController.currentProgressIndicator.collect { progressIndicator ->
+                _mainPageUiState.update { newState ->
+                    newState.copy(
+                        progressIndicator = progressIndicator
+                    )
+                }
+            }
+        }
+    }
+
+    private fun setPlayerState() {
+        viewModelScope.launch {
+            playbackController.mediaPlayerState.collect { mediaPlayerState ->
+                val song =
+                    songRepository.getSongByMediaItem(mediaItem = mediaPlayerState.currentMedia)
+                _mainPageUiState.update { newState ->
+                    newState.copy(
+                        mediaPlayerState = mediaPlayerState,
+                        currentSong = song ?: Song()
+                    )
+                }
+            }
+        }
+    }
+
+
+    private fun setCurrentSongPlaying() {
+        viewModelScope.launch {
+            val currentMediaItem = playbackController.currentMediaItem()
+            currentMediaItem?.let { mediaItem ->
+                val song = songRepository.getSongByMediaItem(mediaItem)
+                _mainPageUiState.update { newState ->
+                    newState.copy(
+                        currentSong = song ?: Song()
+                    )
+                }
+            }
+        }
+    }
+
+    private fun play() {
+        playbackController.play()
+    }
+
+    private fun playNext() {
+        playbackController.seekToNext()
+    }
+
+    private fun pause() {
+        playbackController.pause()
     }
 
     //used if state empty
@@ -126,7 +195,6 @@ class MainViewModel(
                 if (songs.isNotEmpty()) {
                     playbackController.setPlayList(songs)
                 }
-                Timber.tag("MyTag").d("songs: $songs")
                 _mainPageUiState.update { newState ->
                     newState.copy(
                         songState = if (songs.isEmpty()) SongState.Empty else SongState.TrackList(

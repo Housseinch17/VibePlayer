@@ -39,3 +39,14 @@ val Typography.bodyMediumRegular: TextStyle
         color = TextSecondary,
         textAlign = TextAlign.Center
     )
+
+val Typography.bodySmallRegular: TextStyle
+    @Composable
+    get() = TextStyle(
+        fontFamily = hostGroteskFamily,
+        fontWeight = FontWeight.Normal,
+        fontSize = 12.sp,
+        lineHeight = 16.sp,
+        color = SurfaceBg,
+        textAlign = TextAlign.Center
+    )

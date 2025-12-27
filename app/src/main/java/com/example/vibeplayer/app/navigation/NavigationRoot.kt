@@ -1,8 +1,17 @@
 package com.example.vibeplayer.app.navigation
 
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
@@ -34,9 +43,14 @@ import org.koin.core.parameter.parametersOf
 @Composable
 fun NavigationRoot(
     modifier: Modifier,
-    startDestination: NavigationScreens
+    startDestination: NavigationScreens,
 ) {
     val backStack = rememberNavBackStack(startDestination)
+
+    var isMinimized by rememberSaveable {
+        mutableStateOf(false)
+    }
+
     NavDisplay(
         modifier = modifier,
         entryDecorators = listOf(
@@ -90,7 +104,8 @@ fun NavigationRoot(
                 MainPageScreen(
                     modifier = Modifier.fillMaxSize(),
                     mainPageUiState = mainUiState,
-                    onActions = mainViewModel::onActions
+                    onActions = mainViewModel::onActions,
+                    isMinimized = isMinimized
                 )
             }
 
@@ -110,7 +125,22 @@ fun NavigationRoot(
                     onActions = scanMusicViewModel::onActions
                 )
             }
-            entry<NavigationScreens.NowPlaying> { key ->
+            entry<NavigationScreens.NowPlaying>(
+                metadata = NavDisplay.transitionSpec {
+                    // Slide new content up, keeping the old content in place underneath
+                    slideInVertically(
+                        initialOffsetY = { it },
+                        animationSpec = tween(1000)
+                    ) togetherWith ExitTransition.KeepUntilTransitionsFinished
+                } + NavDisplay.popTransitionSpec {
+                    // Slide old content down, revealing the new content in place underneath
+                    EnterTransition.None togetherWith
+                            slideOutVertically(
+                                targetOffsetY = { it },
+                                animationSpec = tween(1000)
+                            )
+                }
+            ) { key ->
                 //here to use the key in viewmodel we have to pass it in parametersOf
                 val nowPlayingViewModel = koinViewModel<NowPlayingViewModel> {
                     parametersOf(key)
@@ -121,7 +151,10 @@ fun NavigationRoot(
 
                 ObserveAsEvents(nowPlayingViewModel.nowPlayingEvents) { events ->
                     when (events) {
-                        NowPlayingEvents.NavigateBack -> backStack.removeLastOrNull()
+                        is NowPlayingEvents.Minimize -> {
+                            isMinimized = true
+                            backStack.removeLastOrNull()
+                        }
                     }
                 }
 

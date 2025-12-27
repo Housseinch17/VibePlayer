@@ -15,18 +15,20 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import timber.log.Timber
 
 sealed interface NowPlayingEvents {
-    data object NavigateBack : NowPlayingEvents
+    data object Minimize : NowPlayingEvents
 }
 
 sealed interface NowPlayingActions {
-    data object NavigateBack : NowPlayingActions
+    data object Minimize : NowPlayingActions
     data object Play : NowPlayingActions
     data object Pause : NowPlayingActions
     data object PlayNext : NowPlayingActions
     data object PlayPrevious : NowPlayingActions
+    data object Shuffle : NowPlayingActions
+    data object RepeatMode: NowPlayingActions
+    data class SeekTo(val position: Long) : NowPlayingActions
 }
 
 class NowPlayingViewModel(
@@ -52,20 +54,19 @@ class NowPlayingViewModel(
 
     fun onActions(nowPlayingActions: NowPlayingActions) {
         when (nowPlayingActions) {
-            NowPlayingActions.NavigateBack -> navigateBack()
+            is NowPlayingActions.Minimize -> minimize()
             NowPlayingActions.Pause -> pause()
             NowPlayingActions.Play -> play()
             NowPlayingActions.PlayNext -> playNext()
             NowPlayingActions.PlayPrevious -> playPrevious()
+            NowPlayingActions.Shuffle -> shuffle()
+            NowPlayingActions.RepeatMode -> repeatMode()
+            is NowPlayingActions.SeekTo -> seekTo(position = nowPlayingActions.position)
         }
     }
 
-    //if the user use back from actions
-//stop playbackController
-//note: after using stop() if we want to play a song again we have to ensure that prepare() is used
-    override fun onCleared() {
-        super.onCleared()
-        playbackController.stop()
+    private fun seekTo(position: Long) {
+        playbackController.seekTo(position = position)
     }
 
     private fun setInitialSong() {
@@ -80,15 +81,33 @@ class NowPlayingViewModel(
                         )
                     }
                     song?.let {
-                        Timber.tag("MyTag").d("started: ${song.id}")
                         playbackController.setMediaItemByIndex(mediaItemsIndex = song.id - 1)
                     }
                 }
 
-                NowPlayingData.Play -> playbackController.play(byMediaOrder = true)
-                NowPlayingData.Shuffle -> playbackController.shuffle()
+                NowPlayingData.Play -> playByMediaOrder()
+
+                NowPlayingData.Shuffle -> shuffle()
             }
         }
+    }
+
+    private fun playByMediaOrder() {
+        playbackController.play(byMediaOrder = true)
+    }
+
+    private fun shuffle() {
+        val isShuffled = _nowPlayingUiState.value.mediaPlayerState.isShuffled
+        //if already shuffled means we have to unshuffle it so playByMediaOrder starts
+        if (isShuffled) {
+            playByMediaOrder()
+        } else {
+            playbackController.shuffle()
+        }
+    }
+
+    private fun repeatMode() {
+        playbackController.repeatMode()
     }
 
     private fun setProgressIndicator() {
@@ -134,12 +153,9 @@ class NowPlayingViewModel(
         playbackController.pause()
     }
 
-    private fun navigateBack() {
+    private fun minimize() {
         viewModelScope.launch {
-            //stop before navigating
-            playbackController.stop()
-            _nowPlayingEvents.send(NowPlayingEvents.NavigateBack)
+            _nowPlayingEvents.send(NowPlayingEvents.Minimize)
         }
     }
-
 }

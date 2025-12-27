@@ -39,24 +39,7 @@ class SearchViewModel(
 ) : ViewModel() {
     private val _searchUiState = MutableStateFlow(SearchUiState())
     val searchUiState = _searchUiState.onStart {
-        viewModelScope.launch {
-        _searchUiState.map {
-            it.searchQuery
-        }.debounce(300)
-            .flatMapLatest { query ->
-                if (query.isBlank())
-                    flowOf(emptyList())
-                else
-                    songRepository.getSongsByTitleOrArtistName(searchQuery = query)
-            }.collect { songs ->
-                _searchUiState.update { newState ->
-                    newState.copy(
-                        songList = songs,
-                        isLoading = false,
-                    )
-                }
-            }
-        }
+        filterSongs()
     }.stateIn(
         viewModelScope,
         SharingStarted.Lazily,
@@ -72,6 +55,27 @@ class SearchViewModel(
             is SearchActions.UpdateSearchQuery -> updateSearchQuery(searchActions.searchQuery)
             SearchActions.Clear -> clear()
             SearchActions.Cancel -> cancel()
+        }
+    }
+
+    private fun filterSongs(){
+        viewModelScope.launch {
+            _searchUiState.map {
+                it.searchQuery
+            }.debounce(300)
+                .flatMapLatest { query ->
+                    if (query.isBlank())
+                        flowOf(emptyList())
+                    else
+                        songRepository.getSongsByTitleOrArtistName(searchQuery = query)
+                }.collect { songs ->
+                    _searchUiState.update { newState ->
+                        newState.copy(
+                            songList = songs,
+                            isLoading = false,
+                        )
+                    }
+                }
         }
     }
 
