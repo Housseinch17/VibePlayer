@@ -28,15 +28,17 @@ class MainActivity : ComponentActivity() {
     private var hasGranted: Boolean = false
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        //place it before the enableEdgeToEdge to avoid creating resources values for v31 below/above
+        //for splash screen
+        installSplashScreen().setKeepOnScreenCondition {
+            mainViewModel.mainState.value.isSplashVisible
+        }
         enableEdgeToEdge()
         WindowCompat.setDecorFitsSystemWindows(window, false)
         WindowCompat.getInsetsController(window, window.decorView).apply {
             //false → icons become white, background become dark
             //true -> icons become dark, background become light
             isAppearanceLightStatusBars = false
-        }
-        installSplashScreen().setKeepOnScreenCondition {
-            mainViewModel.mainState.value.isSplashVisible
         }
         //check if media file/storage permission granted
         hasGranted = checkMediaPermission()

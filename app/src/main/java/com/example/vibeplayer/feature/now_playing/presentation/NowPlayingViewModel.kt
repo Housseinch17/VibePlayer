@@ -72,15 +72,15 @@ class NowPlayingViewModel(
     private fun setInitialSong() {
         viewModelScope.launch {
             when (navKey.nowPlayingData) {
-                is NowPlayingData.PlayByUri -> {
-                    val uri = navKey.nowPlayingData.uri
-                    val song = songRepository.getSongByUri(uri = uri)
+                is NowPlayingData.PlayBySongId -> {
+                    val songId = navKey.nowPlayingData.songId
+                    val song = songRepository.getSongBySongId(songId = songId)
                     _nowPlayingUiState.update { newState ->
                         newState.copy(
-                            song = song ?: Song(),
+                            song = song,
                         )
                     }
-                    song?.let {
+                    song.let {
                         playbackController.setMediaItemByIndex(mediaItemsIndex = song.id - 1)
                     }
                 }

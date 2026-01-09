@@ -30,10 +30,11 @@ sealed interface MainPageActions {
     data object NavigateToSearch : MainPageActions
     data object NavigateAndPlay : MainPageActions
     data object NavigateAndShuffle : MainPageActions
-    data object SetCurrentSong: MainPageActions
+    data object SetCurrentSong : MainPageActions
     data object Play : MainPageActions
     data object Pause : MainPageActions
     data object PlayNext : MainPageActions
+    data object PlayPrevious : MainPageActions
 }
 
 class MainViewModel(
@@ -43,9 +44,9 @@ class MainViewModel(
     private val _mainPageUiState = MutableStateFlow(MainPageUiState())
     val mainPageUiState = _mainPageUiState.onStart {
         viewModelScope.launch {
-        initialSetup()
-        setPlayerState()
-        setProgressIndicator()
+            initialSetup()
+            setPlayerState()
+            setProgressIndicator()
         }
     }.stateIn(
         viewModelScope,
@@ -79,6 +80,7 @@ class MainViewModel(
             MainPageActions.Pause -> pause()
             MainPageActions.Play -> play()
             MainPageActions.PlayNext -> playNext()
+            MainPageActions.PlayPrevious -> playPrevious()
         }
     }
 
@@ -144,6 +146,10 @@ class MainViewModel(
 
     private fun playNext() {
         playbackController.seekToNext()
+    }
+
+    private fun playPrevious() {
+        playbackController.seekToPrevious()
     }
 
     private fun pause() {

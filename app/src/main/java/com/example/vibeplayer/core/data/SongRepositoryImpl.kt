@@ -104,10 +104,8 @@ class SongRepositoryImpl(
         }
     }
 
-    override suspend fun getSongByUri(uri: Uri?): Song? {
-        return uri?.let {
-            songDao.getSongByUri(uri)?.toSong()
-        }
+    override suspend fun getSongBySongId(songId: Long): Song {
+        return songDao.getSongBySongId(songId).toSong()
     }
 
     override suspend fun getSongsByTitleOrArtistName(searchQuery: String): Flow<List<Song>> {

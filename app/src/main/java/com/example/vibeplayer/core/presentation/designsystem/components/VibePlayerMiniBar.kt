@@ -1,6 +1,5 @@
 package com.example.vibeplayer.core.presentation.designsystem.components
 
-import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -37,12 +36,13 @@ import com.example.vibeplayer.core.presentation.designsystem.theme.textSecondary
 @Composable
 fun VibePlayerMiniBar(
     modifier: Modifier = Modifier,
-    onClick: (Uri?) -> Unit,
+    onClick: (Long) -> Unit,
     song: Song,
     isPlaying: Boolean,
     play: () -> Unit,
     pause: () -> Unit,
     playNext: () -> Unit,
+    playPrevious: () -> Unit,
     progressIndicator: Float,
 ) {
     Row(
@@ -61,7 +61,7 @@ fun VibePlayerMiniBar(
             .blur(12.dp)
             .clickable(
                 onClick = {
-                    onClick(song.audioUri)
+                    onClick(song.songId)
                 }
             )
             .padding(16.dp)
@@ -96,6 +96,10 @@ fun VibePlayerMiniBar(
                     artist = song.artist,
                 )
 
+                VibePlayerPlayPreviousButton(
+                    modifier = Modifier,
+                    playPrevious = playPrevious
+                )
                 VibePlayerPlayButton(
                     modifier = Modifier
                         .padding(start = 12.dp, end = 8.dp)

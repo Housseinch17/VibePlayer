@@ -1,6 +1,5 @@
 package com.example.vibeplayer.feature.search.presentation
 
-import android.net.Uri
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -195,7 +194,7 @@ fun SearchTopContent(
 fun SearchList(
     modifier: Modifier = Modifier,
     songList: List<Song>,
-    onSongItemClick: (Uri?) -> Unit,
+    onSongItemClick: (Long) -> Unit,
 ) {
     if (songList.isEmpty()) {
         Text(
@@ -219,7 +218,7 @@ fun SearchList(
                     modifier = Modifier,
                     song = song,
                     onSongItemClick = {
-                        onSongItemClick(song.audioUri)
+                        onSongItemClick(song.songId)
                     }
                 )
                 HorizontalDivider(

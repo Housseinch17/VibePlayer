@@ -36,6 +36,9 @@ interface SongDao {
     @Query("Select * From SongEntity where audioUri = :uri limit 1")
     suspend fun getSongByUri(uri: Uri?): SongEntity?
 
+    @Query("Select * From SongEntity where songId = :songId limit 1")
+    suspend fun getSongBySongId(songId: Long): SongEntity
+
     @Upsert
     suspend fun upsertAll(songs: List<SongEntity>)
 

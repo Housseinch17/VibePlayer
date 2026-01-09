@@ -2,7 +2,6 @@
 
 package com.example.vibeplayer.feature.search.presentation
 
-import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.vibeplayer.app.domain.NowPlayingData
@@ -31,7 +30,7 @@ sealed interface SearchActions {
     data class UpdateSearchQuery(val searchQuery: String) : SearchActions
     data object Clear : SearchActions
     data object Cancel : SearchActions
-    data class PlaySong(val uri: Uri?) : SearchActions
+    data class PlaySong(val songId: Long) : SearchActions
 }
 
 class SearchViewModel(
@@ -51,14 +50,14 @@ class SearchViewModel(
 
     fun onActions(searchActions: SearchActions) {
         when (searchActions) {
-            is SearchActions.PlaySong -> playSong(uri = searchActions.uri)
+            is SearchActions.PlaySong -> playSong(songId = searchActions.songId)
             is SearchActions.UpdateSearchQuery -> updateSearchQuery(searchActions.searchQuery)
             SearchActions.Clear -> clear()
             SearchActions.Cancel -> cancel()
         }
     }
 
-    private fun filterSongs(){
+    private fun filterSongs() {
         viewModelScope.launch {
             _searchUiState.map {
                 it.searchQuery
@@ -102,12 +101,12 @@ class SearchViewModel(
         }
     }
 
-    private fun playSong(uri: Uri?) {
+    private fun playSong(songId: Long) {
         viewModelScope.launch {
             _searchEvents.send(
                 SearchEvents.NavigateToNowPlaying(
-                    nowPlayingData = NowPlayingData.PlayByUri(
-                        uri
+                    nowPlayingData = NowPlayingData.PlayBySongId(
+                        songId
                     )
                 )
             )

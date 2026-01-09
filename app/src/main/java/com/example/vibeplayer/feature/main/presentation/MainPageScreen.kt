@@ -1,6 +1,5 @@
 package com.example.vibeplayer.feature.main.presentation
 
-import android.net.Uri
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -117,12 +116,15 @@ fun MainPageScreen(
                     playNext = {
                         onActions(MainPageActions.PlayNext)
                     },
+                    playPrevious = {
+                        onActions(MainPageActions.PlayPrevious)
+                    },
                     progressIndicator = mainPageUiState.progressIndicatorForLinearProgress,
-                    onClick = { uri->
+                    onClick = { songId->
                         onActions(
                             MainPageActions.NavigateToNowPlaying(
-                                nowPlayingData = NowPlayingData.PlayByUri(
-                                    uri = uri
+                                nowPlayingData = NowPlayingData.PlayBySongId(
+                                    songId = songId
                                 )
                             )
                         )
@@ -158,11 +160,11 @@ fun MainPageScreen(
                         state = lazyListState,
                         songList = mainPageUiState.songState.songList,
                         totalSongs = mainPageUiState.totalSong,
-                        onSongItemClick = { uri ->
+                        onSongItemClick = { songId ->
                             onActions(
                                 MainPageActions.NavigateToNowPlaying(
-                                    nowPlayingData = NowPlayingData.PlayByUri(
-                                        uri = uri
+                                    nowPlayingData = NowPlayingData.PlayBySongId(
+                                        songId = songId
                                     )
                                 )
                             )
@@ -185,7 +187,7 @@ fun MainPageScreen(
 fun TrackListState(
     modifier: Modifier = Modifier,
     state: LazyListState,
-    onSongItemClick: (Uri?) -> Unit,
+    onSongItemClick: (Long) -> Unit,
     songList: List<Song>,
     totalSongs: Int,
     onShuffleClick: () -> Unit,
@@ -242,7 +244,7 @@ fun TrackListState(
                     modifier = Modifier,
                     song = song,
                     onSongItemClick = {
-                        onSongItemClick(song.audioUri)
+                        onSongItemClick(song.songId)
                     }
                 )
                 HorizontalDivider(
