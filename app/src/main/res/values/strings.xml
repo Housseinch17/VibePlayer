@@ -41,5 +41,7 @@ songs</string>
     <string name="no_results_found">No results found</string>
     <string name="minimize">Minimize</string>
     <string name="repeat_mode">Repeat Mode</string>
+    <string name="songs">Songs</string>
+    <string name="playlist">Playlist</string>
 
 </resources>

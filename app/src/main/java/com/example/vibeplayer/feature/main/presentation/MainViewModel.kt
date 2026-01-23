@@ -35,6 +35,7 @@ sealed interface MainPageActions {
     data object Pause : MainPageActions
     data object PlayNext : MainPageActions
     data object PlayPrevious : MainPageActions
+    data class UpdateMainTabs(val mainTabs: MainTabs) : MainPageActions
 }
 
 class MainViewModel(
@@ -70,6 +71,7 @@ class MainViewModel(
                 navigateToNowPlaying(nowPlayingData = mainPageActions.nowPlayingData)
             }
 
+            is MainPageActions.UpdateMainTabs -> updateMainTabs(mainTabs = mainPageActions.mainTabs)
             MainPageActions.NavigateToSearch -> {
                 navigateToSearch()
             }
@@ -125,6 +127,13 @@ class MainViewModel(
         }
     }
 
+    private fun updateMainTabs(mainTabs: MainTabs) {
+        _mainPageUiState.update { newState ->
+            newState.copy(
+                selectedMainTabs = mainTabs
+            )
+        }
+    }
 
     private fun setCurrentSongPlaying() {
         viewModelScope.launch {

@@ -1,16 +1,23 @@
 package com.example.vibeplayer.feature.main.presentation
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
@@ -30,6 +37,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -43,6 +51,7 @@ import com.example.vibeplayer.core.presentation.designsystem.components.VibePlay
 import com.example.vibeplayer.core.presentation.designsystem.components.VibePlayerOutlinedButtonWithIcon
 import com.example.vibeplayer.core.presentation.designsystem.components.VibePlayerPrimaryButton
 import com.example.vibeplayer.core.presentation.designsystem.components.rotationIfScanning
+import com.example.vibeplayer.core.presentation.designsystem.theme.TextPrimary
 import com.example.vibeplayer.core.presentation.designsystem.theme.VibePlayerIcons
 import com.example.vibeplayer.core.presentation.designsystem.theme.VibePlayerImages
 import com.example.vibeplayer.core.presentation.designsystem.theme.accent
@@ -50,6 +59,7 @@ import com.example.vibeplayer.core.presentation.designsystem.theme.bodyLargeMedi
 import com.example.vibeplayer.core.presentation.designsystem.theme.bodyMediumRegular
 import com.example.vibeplayer.core.presentation.designsystem.theme.buttonPrimary
 import com.example.vibeplayer.core.presentation.designsystem.theme.surfaceBG
+import com.example.vibeplayer.core.presentation.designsystem.theme.textDisabled
 import com.example.vibeplayer.core.presentation.designsystem.theme.textPrimary
 import com.example.vibeplayer.core.presentation.designsystem.theme.textSecondary
 import com.example.vibeplayer.core.util.toMinutesSeconds
@@ -120,7 +130,7 @@ fun MainPageScreen(
                         onActions(MainPageActions.PlayPrevious)
                     },
                     progressIndicator = mainPageUiState.progressIndicatorForLinearProgress,
-                    onClick = { songId->
+                    onClick = { songId ->
                         onActions(
                             MainPageActions.NavigateToNowPlaying(
                                 nowPlayingData = NowPlayingData.PlayBySongId(
@@ -157,6 +167,7 @@ fun MainPageScreen(
                 is SongState.TrackList -> {
                     TrackListState(
                         modifier = Modifier,
+                        selectedMainTabs = mainPageUiState.selectedMainTabs,
                         state = lazyListState,
                         songList = mainPageUiState.songState.songList,
                         totalSongs = mainPageUiState.totalSong,
@@ -175,6 +186,9 @@ fun MainPageScreen(
                         onPlayClick = {
                             onActions(MainPageActions.NavigateAndPlay)
                         },
+                        onMainTabsSelect = { mainTabs ->
+                            onActions(MainPageActions.UpdateMainTabs(mainTabs = mainTabs))
+                        }
                     )
                 }
             }
@@ -186,73 +200,146 @@ fun MainPageScreen(
 @Composable
 fun TrackListState(
     modifier: Modifier = Modifier,
+    selectedMainTabs: MainTabs,
     state: LazyListState,
     onSongItemClick: (Long) -> Unit,
     songList: List<Song>,
     totalSongs: Int,
     onShuffleClick: () -> Unit,
     onPlayClick: () -> Unit,
+    onMainTabsSelect: (MainTabs) -> Unit,
 ) {
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Row(
+        Box(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically
         ) {
-            VibePlayerOutlinedButtonWithIcon(
-                modifier = Modifier.weight(1f),
-                buttonContentIconDescription = stringResource(R.string.shuffle),
-                buttonContentIconImageVector = VibePlayerIcons.Shuffle,
-                buttonContentText = stringResource(R.string.shuffle),
-                onClick = onShuffleClick
+            HorizontalDivider(
+                modifier = Modifier.fillMaxWidth().align(Alignment.BottomStart),
+                color = MaterialTheme.colorScheme.textDisabled
             )
-
-            VibePlayerOutlinedButtonWithIcon(
-                modifier = Modifier.weight(1f),
-                buttonContentIconDescription = stringResource(R.string.play),
-                buttonContentIconImageVector = VibePlayerIcons.Play,
-                buttonContentText = stringResource(R.string.play),
-                onClick = onPlayClick,
-            )
-        }
-
-        Text(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 8.dp),
-            text = stringResource(R.string.total_songs, totalSongs),
-            style = MaterialTheme.typography.bodyLargeMedium.copy(
-                textAlign = TextAlign.Start
-            )
-        )
-
-        LazyColumn(
-            modifier = Modifier.fillMaxWidth(),
-            state = state,
-        ) {
-            items(
-                items = songList,
-                key = { song ->
-                    song.id
-                },
-            ) { song ->
-                SongItem(
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+            ) {
+                MainTabsItem(
                     modifier = Modifier,
-                    song = song,
-                    onSongItemClick = {
-                        onSongItemClick(song.songId)
-                    }
+                    mainTabs = MainTabs.SONGS,
+                    selectedMainTabs = selectedMainTabs,
+                    onMainTabsSelect = {
+                        onMainTabsSelect(MainTabs.SONGS)
+                    },
                 )
-                HorizontalDivider(
-                    modifier = Modifier.fillMaxWidth(),
-                    color = MaterialTheme.colorScheme.textSecondary
+                MainTabsItem(
+                    modifier = Modifier,
+                    mainTabs = MainTabs.PLAYLIST,
+                    selectedMainTabs = selectedMainTabs,
+                    onMainTabsSelect = {
+                        onMainTabsSelect(MainTabs.PLAYLIST)
+                    },
                 )
             }
+
         }
+
+        when (selectedMainTabs) {
+            MainTabs.SONGS -> {
+                LazyColumn(
+                    modifier = Modifier.fillMaxWidth(),
+                    state = state,
+                    contentPadding = PaddingValues(vertical = 16.dp)
+                ) {
+                    item {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            VibePlayerOutlinedButtonWithIcon(
+                                modifier = Modifier.weight(1f),
+                                buttonContentIconDescription = stringResource(R.string.shuffle),
+                                buttonContentIconImageVector = VibePlayerIcons.Shuffle,
+                                buttonContentText = stringResource(R.string.shuffle),
+                                borderStroke = BorderStroke(1.dp, MaterialTheme.colorScheme.textDisabled),
+                                onClick = onShuffleClick
+                            )
+
+                            VibePlayerOutlinedButtonWithIcon(
+                                modifier = Modifier.weight(1f),
+                                buttonContentIconDescription = stringResource(R.string.play),
+                                buttonContentIconImageVector = VibePlayerIcons.Play,
+                                buttonContentText = stringResource(R.string.play),
+                                borderStroke = BorderStroke(1.dp, MaterialTheme.colorScheme.textDisabled),
+                                onClick = onPlayClick,
+                            )
+                        }
+                        Text(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 8.dp),
+                            text = stringResource(R.string.total_songs, totalSongs),
+                            style = MaterialTheme.typography.bodyLargeMedium.copy(
+                                textAlign = TextAlign.Start
+                            )
+                        )
+                    }
+
+                    items(
+                        items = songList,
+                        key = { song ->
+                            song.id
+                        },
+                    ) { song ->
+                        SongItem(
+                            modifier = Modifier,
+                            song = song,
+                            onSongItemClick = {
+                                onSongItemClick(song.songId)
+                            }
+                        )
+                        HorizontalDivider(
+                            modifier = Modifier.fillMaxWidth(),
+                            color = MaterialTheme.colorScheme.textDisabled
+                        )
+                    }
+                }
+            }
+
+            else -> {
+
+            }
+        }
+    }
+}
+
+@Composable
+fun MainTabsItem(
+    modifier: Modifier = Modifier,
+    mainTabs: MainTabs,
+    selectedMainTabs: MainTabs,
+    onMainTabsSelect: () -> Unit,
+) {
+    Column(
+        modifier = modifier.width(intrinsicSize = IntrinsicSize.Max),
+        horizontalAlignment = Alignment.Start,
+        verticalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(
+            modifier = Modifier.clickable(onClick = onMainTabsSelect),
+            text = stringResource(mainTabs.resourceId),
+            style = MaterialTheme.typography.bodyMedium.copy(
+                color = TextPrimary
+            )
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+
+        HorizontalDivider(
+            modifier = Modifier.fillMaxWidth(),
+            color = if (mainTabs == selectedMainTabs) TextPrimary else Color.Transparent
+        )
     }
 }
 

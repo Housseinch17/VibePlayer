@@ -3,6 +3,7 @@
 
 package com.example.vibeplayer.feature.now_playing.presentation
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -53,6 +54,9 @@ fun NowPlayingScreen(
     nowPlayingUiState: NowPlayingUiState,
     nowPlayingActions: (NowPlayingActions) -> Unit,
 ) {
+    BackHandler{
+        nowPlayingActions(NowPlayingActions.Minimize)
+    }
     Scaffold(
         modifier = modifier
             .padding(horizontal = 16.dp),
