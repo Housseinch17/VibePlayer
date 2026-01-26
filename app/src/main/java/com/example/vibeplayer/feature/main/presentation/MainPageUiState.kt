@@ -11,8 +11,11 @@ data class MainPageUiState(
     val songState: SongState = SongState.Scanning,
     val mediaPlayerState: MediaPlayerState = MediaPlayerState(),
     val selectedMainTabs: MainTabs = MainTabs.SONGS,
+    val playList: List<Any> = emptyList(),
+    val favoritePlayList: PlayListModel = PlayListModel(),
 ) {
     val totalSong = if (songState is SongState.TrackList) songState.songList.size else 0
+    val totalPlayList = playList.size
     val progressIndicatorForLinearProgress: Float =
         if (mediaPlayerState.duration > 0)
             (progressIndicator / mediaPlayerState.duration.toFloat())

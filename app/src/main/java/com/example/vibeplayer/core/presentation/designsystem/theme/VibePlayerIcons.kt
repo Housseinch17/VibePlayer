@@ -79,4 +79,11 @@ object VibePlayerIcons {
         @Composable
         get() = ImageVector.vectorResource(R.drawable.clear)
 
+    val Add: ImageVector
+    @Composable
+    get() = ImageVector.vectorResource(R.drawable.add)
+
+    val MenuDots: ImageVector
+        @Composable
+        get() = ImageVector.vectorResource(R.drawable.menu_dots)
 }

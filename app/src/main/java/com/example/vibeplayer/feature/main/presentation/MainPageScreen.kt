@@ -1,5 +1,6 @@
 package com.example.vibeplayer.feature.main.presentation
 
+import android.annotation.SuppressLint
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -23,6 +24,7 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -39,7 +41,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.vibeplayer.R
@@ -59,7 +63,7 @@ import com.example.vibeplayer.core.presentation.designsystem.theme.bodyLargeMedi
 import com.example.vibeplayer.core.presentation.designsystem.theme.bodyMediumRegular
 import com.example.vibeplayer.core.presentation.designsystem.theme.buttonPrimary
 import com.example.vibeplayer.core.presentation.designsystem.theme.surfaceBG
-import com.example.vibeplayer.core.presentation.designsystem.theme.textDisabled
+import com.example.vibeplayer.core.presentation.designsystem.theme.surfaceOutline
 import com.example.vibeplayer.core.presentation.designsystem.theme.textPrimary
 import com.example.vibeplayer.core.presentation.designsystem.theme.textSecondary
 import com.example.vibeplayer.core.util.toMinutesSeconds
@@ -146,22 +150,27 @@ fun MainPageScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding)
-                .padding(horizontal = 16.dp),
+                .padding(innerPadding),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top
         ) {
             when (mainPageUiState.songState) {
                 SongState.Empty -> {
                     EmptyState(
-                        modifier = Modifier.fillMaxSize(),
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 16.dp),
                         scanAgain = {
                             onActions(MainPageActions.ScanAgain)
                         })
                 }
 
                 SongState.Scanning -> {
-                    ScanningState(modifier = Modifier.fillMaxSize())
+                    ScanningState(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 16.dp)
+                    )
                 }
 
                 is SongState.TrackList -> {
@@ -171,6 +180,7 @@ fun MainPageScreen(
                         state = lazyListState,
                         songList = mainPageUiState.songState.songList,
                         totalSongs = mainPageUiState.totalSong,
+                        totalPlaylist = mainPageUiState.totalPlayList,
                         onSongItemClick = { songId ->
                             onActions(
                                 MainPageActions.NavigateToNowPlaying(
@@ -188,6 +198,11 @@ fun MainPageScreen(
                         },
                         onMainTabsSelect = { mainTabs ->
                             onActions(MainPageActions.UpdateMainTabs(mainTabs = mainTabs))
+                        },
+                        onAddClick = {},
+                        favoritePlayList = mainPageUiState.favoritePlayList,
+                        onMenuDotsClick = {
+
                         }
                     )
                 }
@@ -197,6 +212,7 @@ fun MainPageScreen(
 }
 
 
+@SuppressLint("LocalContextResourcesRead")
 @Composable
 fun TrackListState(
     modifier: Modifier = Modifier,
@@ -205,9 +221,13 @@ fun TrackListState(
     onSongItemClick: (Long) -> Unit,
     songList: List<Song>,
     totalSongs: Int,
+    totalPlaylist: Int,
     onShuffleClick: () -> Unit,
     onPlayClick: () -> Unit,
     onMainTabsSelect: (MainTabs) -> Unit,
+    onAddClick: () -> Unit,
+    favoritePlayList: PlayListModel,
+    onMenuDotsClick: (PlayListModel) -> Unit,
 ) {
     Column(
         modifier = modifier,
@@ -218,11 +238,15 @@ fun TrackListState(
             modifier = Modifier.fillMaxWidth(),
         ) {
             HorizontalDivider(
-                modifier = Modifier.fillMaxWidth().align(Alignment.BottomStart),
-                color = MaterialTheme.colorScheme.textDisabled
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.BottomStart),
+                color = MaterialTheme.colorScheme.surfaceOutline
             )
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly,
             ) {
                 MainTabsItem(
@@ -247,71 +271,208 @@ fun TrackListState(
 
         when (selectedMainTabs) {
             MainTabs.SONGS -> {
-                LazyColumn(
-                    modifier = Modifier.fillMaxWidth(),
+                SongsContent(
                     state = state,
-                    contentPadding = PaddingValues(vertical = 16.dp)
-                ) {
-                    item {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            VibePlayerOutlinedButtonWithIcon(
-                                modifier = Modifier.weight(1f),
-                                buttonContentIconDescription = stringResource(R.string.shuffle),
-                                buttonContentIconImageVector = VibePlayerIcons.Shuffle,
-                                buttonContentText = stringResource(R.string.shuffle),
-                                borderStroke = BorderStroke(1.dp, MaterialTheme.colorScheme.textDisabled),
-                                onClick = onShuffleClick
-                            )
-
-                            VibePlayerOutlinedButtonWithIcon(
-                                modifier = Modifier.weight(1f),
-                                buttonContentIconDescription = stringResource(R.string.play),
-                                buttonContentIconImageVector = VibePlayerIcons.Play,
-                                buttonContentText = stringResource(R.string.play),
-                                borderStroke = BorderStroke(1.dp, MaterialTheme.colorScheme.textDisabled),
-                                onClick = onPlayClick,
-                            )
-                        }
-                        Text(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 8.dp),
-                            text = stringResource(R.string.total_songs, totalSongs),
-                            style = MaterialTheme.typography.bodyLargeMedium.copy(
-                                textAlign = TextAlign.Start
-                            )
-                        )
-                    }
-
-                    items(
-                        items = songList,
-                        key = { song ->
-                            song.id
-                        },
-                    ) { song ->
-                        SongItem(
-                            modifier = Modifier,
-                            song = song,
-                            onSongItemClick = {
-                                onSongItemClick(song.songId)
-                            }
-                        )
-                        HorizontalDivider(
-                            modifier = Modifier.fillMaxWidth(),
-                            color = MaterialTheme.colorScheme.textDisabled
-                        )
-                    }
-                }
+                    onSongItemClick = onSongItemClick,
+                    songList = songList,
+                    totalSongs = totalSongs,
+                    onShuffleClick = onShuffleClick,
+                    onPlayClick = onPlayClick
+                )
             }
 
             else -> {
-
+                PlaylistContent(
+                    totalPlaylist = totalPlaylist,
+                    onAddClick = onAddClick,
+                    favoritePlayList = favoritePlayList,
+                    onMenuDotsClick = onMenuDotsClick
+                )
             }
         }
+    }
+}
+
+
+@Composable
+fun SongsContent(
+    modifier: Modifier = Modifier,
+    state: LazyListState,
+    onSongItemClick: (Long) -> Unit,
+    songList: List<Song>,
+    totalSongs: Int,
+    onShuffleClick: () -> Unit,
+    onPlayClick: () -> Unit,
+) {
+    LazyColumn(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        state = state,
+        contentPadding = PaddingValues(vertical = 16.dp)
+    ) {
+        item {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                VibePlayerOutlinedButtonWithIcon(
+                    modifier = Modifier.weight(1f),
+                    buttonContentIconDescription = stringResource(R.string.shuffle),
+                    buttonContentIconImageVector = VibePlayerIcons.Shuffle,
+                    buttonContentText = stringResource(R.string.shuffle),
+                    borderStroke = BorderStroke(
+                        1.dp,
+                        MaterialTheme.colorScheme.surfaceOutline
+                    ),
+                    onClick = onShuffleClick
+                )
+
+                VibePlayerOutlinedButtonWithIcon(
+                    modifier = Modifier.weight(1f),
+                    buttonContentIconDescription = stringResource(R.string.play),
+                    buttonContentIconImageVector = VibePlayerIcons.Play,
+                    buttonContentText = stringResource(R.string.play),
+                    borderStroke = BorderStroke(
+                        1.dp,
+                        MaterialTheme.colorScheme.surfaceOutline
+                    ),
+                    onClick = onPlayClick,
+                )
+            }
+            Text(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                text = stringResource(R.string.total_songs, totalSongs),
+                style = MaterialTheme.typography.bodyLargeMedium.copy(
+                    textAlign = TextAlign.Start
+                )
+            )
+        }
+
+        items(
+            items = songList,
+            key = { song ->
+                song.id
+            },
+        ) { song ->
+            SongItem(
+                modifier = Modifier,
+                song = song,
+                onSongItemClick = {
+                    onSongItemClick(song.songId)
+                }
+            )
+            HorizontalDivider(
+                modifier = Modifier.fillMaxWidth(),
+                color = MaterialTheme.colorScheme.surfaceOutline
+            )
+        }
+    }
+}
+
+@Composable
+fun PlaylistContent(
+    modifier: Modifier = Modifier,
+    totalPlaylist: Int,
+    onAddClick: () -> Unit,
+    favoritePlayList: PlayListModel,
+    onMenuDotsClick: (PlayListModel) -> Unit
+) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(top = 12.dp)
+            .padding(horizontal = 16.dp),
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(end = 12.dp),
+                //note that plurals treat "zero" as not exist or something
+                text = "$totalPlaylist ${stringResource(R.string.playlist)}",
+                style = MaterialTheme.typography.bodyLargeMedium.copy(
+                    color = MaterialTheme.colorScheme.textSecondary,
+                    textAlign = TextAlign.Start
+                )
+            )
+            VibePlayerIconShape(
+                modifier = Modifier,
+                imageVector = VibePlayerIcons.Add,
+                iconDescription = stringResource(R.string.add),
+                onClick = onAddClick
+            )
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        PlaylistItem(
+            playListModel = favoritePlayList,
+            onMenuDotsClick = { onMenuDotsClick(favoritePlayList) }
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+    }
+}
+
+@Composable
+fun PlaylistItem(
+    modifier: Modifier = Modifier,
+    playListModel: PlayListModel,
+    onMenuDotsClick: (PlayListModel) -> Unit,
+) {
+    val context = LocalContext.current
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        VibePlayerAsyncImage(
+            modifier = Modifier
+                .size(64.dp)
+                .clip(CircleShape),
+            imageUrl = playListModel.embeddedArt,
+            contentDescription = stringResource(R.string.playlist_image),
+            errorDrawable = playListModel.errorDrawable,
+        )
+        Spacer(modifier = Modifier.width(12.dp))
+        Column(
+            modifier = Modifier.weight(1f),
+        ) {
+            Text(
+                modifier = Modifier,
+                text = playListModel.name,
+                style = MaterialTheme.typography.titleMedium.copy(
+                    color = MaterialTheme.colorScheme.textPrimary,
+                    textAlign = TextAlign.Start,
+                    fontWeight = FontWeight.Bold
+                )
+            )
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+                modifier = Modifier,
+                text = if (playListModel.total == 0) "0 ${stringResource(R.string.playlist)}"
+                else context.resources.getQuantityString(
+                    R.plurals.playlist_size,
+                    playListModel.total,
+                    playListModel.total
+                ),
+                style = MaterialTheme.typography.bodyMediumRegular.copy(
+                    color = MaterialTheme.colorScheme.textSecondary,
+                    textAlign = TextAlign.Start
+                )
+            )
+        }
+        Image(
+            modifier = Modifier.clickable(onClick = { onMenuDotsClick(playListModel) }),
+            imageVector = VibePlayerIcons.MenuDots,
+            contentDescription = stringResource(R.string.menu_dots),
+        )
     }
 }
 

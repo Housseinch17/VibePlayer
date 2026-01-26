@@ -6,10 +6,10 @@ import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
 import androidx.media3.common.MediaItem
-import com.example.vibeplayer.core.database.SongDao
-import com.example.vibeplayer.core.database.toDomainModel
-import com.example.vibeplayer.core.database.toEntity
-import com.example.vibeplayer.core.database.toSong
+import com.example.vibeplayer.core.database.song.SongDao
+import com.example.vibeplayer.core.database.song.toDomainModel
+import com.example.vibeplayer.core.database.song.toEntity
+import com.example.vibeplayer.core.database.song.toSong
 import com.example.vibeplayer.core.domain.Result
 import com.example.vibeplayer.core.domain.Song
 import com.example.vibeplayer.core.domain.SongRepository

@@ -2,6 +2,7 @@ package com.example.vibeplayer.feature.main.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.vibeplayer.R
 import com.example.vibeplayer.app.domain.NowPlayingData
 import com.example.vibeplayer.core.domain.PlaybackController
 import com.example.vibeplayer.core.domain.Result
@@ -48,6 +49,7 @@ class MainViewModel(
             initialSetup()
             setPlayerState()
             setProgressIndicator()
+            setPlayLists()
         }
     }.stateIn(
         viewModelScope,
@@ -108,6 +110,22 @@ class MainViewModel(
                         progressIndicator = progressIndicator
                     )
                 }
+            }
+        }
+    }
+
+    private fun setPlayLists() {
+        viewModelScope.launch {
+            val favoritePlayList = PlayListModel(
+                "Favorite",
+                total = 2,
+                embeddedArt = null,
+                errorDrawable = R.drawable.favorite_playlist
+            )
+            _mainPageUiState.update { newState ->
+                newState.copy(
+                    favoritePlayList = favoritePlayList,
+                )
             }
         }
     }

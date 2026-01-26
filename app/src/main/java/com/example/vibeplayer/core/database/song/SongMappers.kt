@@ -1,4 +1,4 @@
-package com.example.vibeplayer.core.database
+package com.example.vibeplayer.core.database.song
 
 import com.example.vibeplayer.core.domain.Song
 
