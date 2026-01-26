@@ -45,6 +45,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.vibeplayer.R
 import com.example.vibeplayer.app.domain.NowPlayingData
@@ -180,7 +181,7 @@ fun MainPageScreen(
                         state = lazyListState,
                         songList = mainPageUiState.songState.songList,
                         totalSongs = mainPageUiState.totalSong,
-                        totalPlaylist = mainPageUiState.totalPlayList,
+                        totalPlaylist = mainPageUiState.myPlayList.size + 1,
                         onSongItemClick = { songId ->
                             onActions(
                                 MainPageActions.NavigateToNowPlaying(
@@ -203,6 +204,10 @@ fun MainPageScreen(
                         favoritePlayList = mainPageUiState.favoritePlayList,
                         onMenuDotsClick = {
 
+                        },
+                        myPlatListList = mainPageUiState.myPlayList,
+                        onCreatePlayListClick = {
+                            onActions(MainPageActions.OnCreatePlayListClick)
                         }
                     )
                 }
@@ -228,6 +233,8 @@ fun TrackListState(
     onAddClick: () -> Unit,
     favoritePlayList: PlayListModel,
     onMenuDotsClick: (PlayListModel) -> Unit,
+    myPlatListList: List<PlayListModel>,
+    onCreatePlayListClick: () -> Unit,
 ) {
     Column(
         modifier = modifier,
@@ -286,7 +293,9 @@ fun TrackListState(
                     totalPlaylist = totalPlaylist,
                     onAddClick = onAddClick,
                     favoritePlayList = favoritePlayList,
-                    onMenuDotsClick = onMenuDotsClick
+                    onMenuDotsClick = onMenuDotsClick,
+                    myPlatListList = myPlatListList,
+                    onCreatePlayListClick = onCreatePlayListClick,
                 )
             }
         }
@@ -379,8 +388,11 @@ fun PlaylistContent(
     totalPlaylist: Int,
     onAddClick: () -> Unit,
     favoritePlayList: PlayListModel,
-    onMenuDotsClick: (PlayListModel) -> Unit
+    myPlatListList: List<PlayListModel>,
+    onMenuDotsClick: (PlayListModel) -> Unit,
+    onCreatePlayListClick: () -> Unit,
 ) {
+    val context = LocalContext.current
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -397,7 +409,13 @@ fun PlaylistContent(
                     .weight(1f)
                     .padding(end = 12.dp),
                 //note that plurals treat "zero" as not exist or something
-                text = "$totalPlaylist ${stringResource(R.string.playlist)}",
+                //here the playList is never 0 either 1 or more so we can remove the condition
+                //if totalPlaylist == 0
+                text = context.resources.getQuantityString(
+                    R.plurals.playlist_size,
+                    totalPlaylist,
+                    totalPlaylist
+                ),
                 style = MaterialTheme.typography.bodyLargeMedium.copy(
                     color = MaterialTheme.colorScheme.textSecondary,
                     textAlign = TextAlign.Start
@@ -410,12 +428,60 @@ fun PlaylistContent(
                 onClick = onAddClick
             )
         }
-        Spacer(modifier = Modifier.height(8.dp))
         PlaylistItem(
             playListModel = favoritePlayList,
             onMenuDotsClick = { onMenuDotsClick(favoritePlayList) }
         )
-        Spacer(modifier = Modifier.height(12.dp))
+        Text(
+            modifier = Modifier,
+            text = stringResource(R.string.my_playlist, myPlatListList.size),
+            style = MaterialTheme.typography.bodyLargeMedium.copy(
+                color = MaterialTheme.colorScheme.textSecondary,
+            )
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        if (myPlatListList.isNotEmpty()) {
+            MyPlaylists(
+                myPlatListList = myPlatListList,
+                onMenuDotsClick = { playListModel ->
+                    onMenuDotsClick(playListModel)
+                }
+            )
+        } else {
+            Spacer(modifier = Modifier.height(8.dp))
+            VibePlayerOutlinedButtonWithIcon(
+                modifier = Modifier.fillMaxWidth(),
+                onClick = onCreatePlayListClick,
+                buttonContentIconImageVector = VibePlayerIcons.Add,
+                buttonContentIconDescription = stringResource(R.string.add),
+                buttonContentText = stringResource(R.string.create_playlist),
+                borderStroke = BorderStroke(1.dp, MaterialTheme.colorScheme.surfaceOutline)
+            )
+        }
+    }
+}
+
+@Composable
+fun MyPlaylists(
+    modifier: Modifier = Modifier,
+    myPlatListList: List<PlayListModel>,
+    onMenuDotsClick: (PlayListModel) -> Unit
+) {
+    LazyColumn(
+        modifier = modifier.fillMaxWidth()
+    ) {
+        items(myPlatListList) { playListModel ->
+            PlaylistItem(
+                playListModel = playListModel,
+                onMenuDotsClick = {
+                    onMenuDotsClick(playListModel)
+                }
+            )
+            HorizontalDivider(
+                modifier = Modifier.fillMaxWidth(),
+                color = MaterialTheme.colorScheme.surfaceOutline
+            )
+        }
     }
 }
 
@@ -451,14 +517,16 @@ fun PlaylistItem(
                     color = MaterialTheme.colorScheme.textPrimary,
                     textAlign = TextAlign.Start,
                     fontWeight = FontWeight.Bold
-                )
+                ),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
             Spacer(modifier = Modifier.height(2.dp))
             Text(
                 modifier = Modifier,
-                text = if (playListModel.total == 0) "0 ${stringResource(R.string.playlist)}"
+                text = if (playListModel.total == 0) "0 ${stringResource(R.string.song)}"
                 else context.resources.getQuantityString(
-                    R.plurals.playlist_size,
+                    R.plurals.song_size,
                     playListModel.total,
                     playListModel.total
                 ),

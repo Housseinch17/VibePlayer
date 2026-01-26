@@ -10,12 +10,22 @@ data class MainPageUiState(
     val progressIndicator: Float = 0f,
     val songState: SongState = SongState.Scanning,
     val mediaPlayerState: MediaPlayerState = MediaPlayerState(),
-    val selectedMainTabs: MainTabs = MainTabs.SONGS,
-    val playList: List<Any> = emptyList(),
+    val selectedMainTabs: MainTabs = MainTabs.PLAYLIST,
+    val myPlayList: List<PlayListModel> = listOf(
+        PlayListModel(
+            name = "Friday Chill",
+            total = 2,
+            errorDrawable = R.drawable.favorite_playlist
+        ),
+        PlayListModel(
+            name = "Hypin’ myself up for cleaning",
+            total = 2,
+            errorDrawable = R.drawable.other_playlist
+        ),
+    ),
     val favoritePlayList: PlayListModel = PlayListModel(),
 ) {
     val totalSong = if (songState is SongState.TrackList) songState.songList.size else 0
-    val totalPlayList = playList.size
     val progressIndicatorForLinearProgress: Float =
         if (mediaPlayerState.duration > 0)
             (progressIndicator / mediaPlayerState.duration.toFloat())

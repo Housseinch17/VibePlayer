@@ -36,6 +36,7 @@ sealed interface MainPageActions {
     data object Pause : MainPageActions
     data object PlayNext : MainPageActions
     data object PlayPrevious : MainPageActions
+    data object OnCreatePlayListClick: MainPageActions
     data class UpdateMainTabs(val mainTabs: MainTabs) : MainPageActions
 }
 
@@ -85,6 +86,7 @@ class MainViewModel(
             MainPageActions.Play -> play()
             MainPageActions.PlayNext -> playNext()
             MainPageActions.PlayPrevious -> playPrevious()
+            MainPageActions.OnCreatePlayListClick -> {}
         }
     }
 

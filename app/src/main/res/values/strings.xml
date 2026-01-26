@@ -48,5 +48,7 @@ songs</string>
     <string name="menu_dots">Menu Dots</string>
     <string name="favorite">Favorite</string>
     <string name="my_playlist">My Playlists (%1$d)</string>
+    <string name="create_playlist">Create playlist</string>
+    <string name="song">Song</string>
 
 </resources>

@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <plurals name="song_size">
+        <item quantity="one">%d Song</item>
+        <item quantity="other">%d Songs</item>
+    </plurals>
+
     <plurals name="playlist_size">
         <item quantity="one">%d Playlist</item>
         <item quantity="other">%d Playlists</item>
