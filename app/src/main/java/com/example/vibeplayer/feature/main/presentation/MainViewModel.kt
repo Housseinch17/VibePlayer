@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.vibeplayer.R
 import com.example.vibeplayer.app.domain.NowPlayingData
 import com.example.vibeplayer.core.domain.PlaybackController
+import com.example.vibeplayer.core.domain.PlaylistsWithSongsRepository
 import com.example.vibeplayer.core.domain.Result
 import com.example.vibeplayer.core.domain.Song
 import com.example.vibeplayer.core.domain.SongRepository
@@ -36,13 +37,17 @@ sealed interface MainPageActions {
     data object Pause : MainPageActions
     data object PlayNext : MainPageActions
     data object PlayPrevious : MainPageActions
-    data object OnCreatePlayListClick: MainPageActions
+    data object OnCreatePlayListClick : MainPageActions
     data class UpdateMainTabs(val mainTabs: MainTabs) : MainPageActions
+    data object ShowBottomSheet : MainPageActions
+    data object HideBottomSheet : MainPageActions
+    data class UpdatePlaylistTextField(val value: String) : MainPageActions
 }
 
 class MainViewModel(
     private val songRepository: SongRepository,
     private val playbackController: PlaybackController,
+    private val playlistsWithSongsRepository: PlaylistsWithSongsRepository,
 ) : ViewModel() {
     private val _mainPageUiState = MutableStateFlow(MainPageUiState())
     val mainPageUiState = _mainPageUiState.onStart {
@@ -79,6 +84,8 @@ class MainViewModel(
                 navigateToSearch()
             }
 
+            is MainPageActions.UpdatePlaylistTextField -> updatePlaylistTextField(newValue = mainPageActions.value)
+
             MainPageActions.NavigateAndPlay -> navigateAndPlay()
             MainPageActions.NavigateAndShuffle -> navigateAndShuffle()
             MainPageActions.SetCurrentSong -> setCurrentSongPlaying()
@@ -86,7 +93,9 @@ class MainViewModel(
             MainPageActions.Play -> play()
             MainPageActions.PlayNext -> playNext()
             MainPageActions.PlayPrevious -> playPrevious()
-            MainPageActions.OnCreatePlayListClick -> {}
+            MainPageActions.OnCreatePlayListClick -> create()
+            MainPageActions.ShowBottomSheet -> showBottomSheet()
+            MainPageActions.HideBottomSheet -> hideBottomSheet()
         }
     }
 
@@ -103,6 +112,7 @@ class MainViewModel(
             getSongs()
         }
     }
+
 
     private fun setProgressIndicator() {
         viewModelScope.launch {
@@ -237,6 +247,44 @@ class MainViewModel(
                         )
                     )
                 }
+            }
+        }
+    }
+
+    private fun create() {
+        val playlistName = _mainPageUiState.value.playListTextField
+        val selectedSongsId = listOf(1,2,3,4,5)
+        viewModelScope.launch {
+            playlistsWithSongsRepository.createPlaylistWithSongs(
+                playlistName = playlistName,
+                selectedSongIds = selectedSongsId
+            )
+        }
+    }
+
+    private fun showBottomSheet() {
+        _mainPageUiState.update { newState ->
+            newState.copy(
+                isBottomSheetVisible = true
+            )
+        }
+    }
+
+    private fun hideBottomSheet() {
+        _mainPageUiState.update { newState ->
+            newState.copy(
+                isBottomSheetVisible = false,
+                playListTextField = ""
+            )
+        }
+    }
+
+    private fun updatePlaylistTextField(newValue: String) {
+        if (newValue.length <= 40) {
+            _mainPageUiState.update { newState ->
+                newState.copy(
+                    playListTextField = newValue
+                )
             }
         }
     }

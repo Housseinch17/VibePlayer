@@ -39,6 +39,9 @@ interface SongDao {
     @Query("Select * From SongEntity where songId = :songId limit 1")
     suspend fun getSongBySongId(songId: Long): SongEntity
 
+    @Query("Select * From SongEntity where id = :id limit 1")
+    suspend fun getSongById(id: Int): SongEntity
+
     @Upsert
     suspend fun upsertAll(songs: List<SongEntity>)
 

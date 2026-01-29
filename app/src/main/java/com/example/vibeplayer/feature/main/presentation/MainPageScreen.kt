@@ -51,6 +51,7 @@ import com.example.vibeplayer.R
 import com.example.vibeplayer.app.domain.NowPlayingData
 import com.example.vibeplayer.core.domain.Song
 import com.example.vibeplayer.core.presentation.designsystem.components.VibePlayerAsyncImage
+import com.example.vibeplayer.core.presentation.designsystem.components.VibePlayerBottomSheet
 import com.example.vibeplayer.core.presentation.designsystem.components.VibePlayerIconShape
 import com.example.vibeplayer.core.presentation.designsystem.components.VibePlayerMiniBar
 import com.example.vibeplayer.core.presentation.designsystem.components.VibePlayerOutlinedButtonWithIcon
@@ -200,15 +201,26 @@ fun MainPageScreen(
                         onMainTabsSelect = { mainTabs ->
                             onActions(MainPageActions.UpdateMainTabs(mainTabs = mainTabs))
                         },
-                        onAddClick = {},
                         favoritePlayList = mainPageUiState.favoritePlayList,
                         onMenuDotsClick = {
 
                         },
                         myPlatListList = mainPageUiState.myPlayList,
-                        onCreatePlayListClick = {
+                        onCreatePlayList = {
+                            onActions(MainPageActions.ShowBottomSheet)
+                        },
+                        isBottomSheetVisible = mainPageUiState.isBottomSheetVisible,
+                        isCreateEnabled = mainPageUiState.isCreateEnabled,
+                        onCreateClick = {
                             onActions(MainPageActions.OnCreatePlayListClick)
-                        }
+                        },
+                        onCancelClick = {
+                            onActions(MainPageActions.HideBottomSheet)
+                        },
+                        playListTextFieldValue = mainPageUiState.playListTextField,
+                        onPlaylistValueChange = { newValue ->
+                            onActions(MainPageActions.UpdatePlaylistTextField(value = newValue))
+                        },
                     )
                 }
             }
@@ -230,11 +242,16 @@ fun TrackListState(
     onShuffleClick: () -> Unit,
     onPlayClick: () -> Unit,
     onMainTabsSelect: (MainTabs) -> Unit,
-    onAddClick: () -> Unit,
     favoritePlayList: PlayListModel,
     onMenuDotsClick: (PlayListModel) -> Unit,
     myPlatListList: List<PlayListModel>,
-    onCreatePlayListClick: () -> Unit,
+    onCreatePlayList: () -> Unit,
+    isBottomSheetVisible: Boolean,
+    isCreateEnabled: Boolean,
+    onCreateClick: () -> Unit,
+    onCancelClick: () -> Unit,
+    playListTextFieldValue: String,
+    onPlaylistValueChange: (String) -> Unit,
 ) {
     Column(
         modifier = modifier,
@@ -273,7 +290,6 @@ fun TrackListState(
                     },
                 )
             }
-
         }
 
         when (selectedMainTabs) {
@@ -289,14 +305,28 @@ fun TrackListState(
             }
 
             else -> {
-                PlaylistContent(
-                    totalPlaylist = totalPlaylist,
-                    onAddClick = onAddClick,
-                    favoritePlayList = favoritePlayList,
-                    onMenuDotsClick = onMenuDotsClick,
-                    myPlatListList = myPlatListList,
-                    onCreatePlayListClick = onCreatePlayListClick,
-                )
+                Column {
+                    PlaylistContent(
+                        totalPlaylist = totalPlaylist,
+                        onAddClick = onCreatePlayList,
+                        favoritePlayList = favoritePlayList,
+                        onMenuDotsClick = onMenuDotsClick,
+                        myPlatListList = myPlatListList,
+                        onCreatePlayList = onCreatePlayList,
+                    )
+                    if (isBottomSheetVisible) {
+                        VibePlayerBottomSheet(
+                            modifier = Modifier,
+                            value = playListTextFieldValue,
+                            onValueChange = { newValue ->
+                                onPlaylistValueChange(newValue)
+                            },
+                            isCreateEnabled = isCreateEnabled,
+                            onCancelClick = onCancelClick,
+                            onCreateClick = onCreateClick
+                        )
+                    }
+                }
             }
         }
     }
@@ -390,7 +420,7 @@ fun PlaylistContent(
     favoritePlayList: PlayListModel,
     myPlatListList: List<PlayListModel>,
     onMenuDotsClick: (PlayListModel) -> Unit,
-    onCreatePlayListClick: () -> Unit,
+    onCreatePlayList: () -> Unit,
 ) {
     val context = LocalContext.current
     Column(
@@ -451,7 +481,7 @@ fun PlaylistContent(
             Spacer(modifier = Modifier.height(8.dp))
             VibePlayerOutlinedButtonWithIcon(
                 modifier = Modifier.fillMaxWidth(),
-                onClick = onCreatePlayListClick,
+                onClick = onCreatePlayList,
                 buttonContentIconImageVector = VibePlayerIcons.Add,
                 buttonContentIconDescription = stringResource(R.string.add),
                 buttonContentText = stringResource(R.string.create_playlist),

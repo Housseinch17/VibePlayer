@@ -143,7 +143,7 @@ class SongRepositoryImpl(
         //convert to Bytes since audio size is in Bytes
         val sizeInBytes = (size * 1024).toString()
 
-        // Show only audios that are at least duration and size.
+        //Show only audios that are at least duration and size.
         val selection =
             "${MediaStore.Audio.Media.DURATION} >= ? AND ${MediaStore.Audio.Media.SIZE} >= ? AND ${MediaStore.Audio.Media.IS_MUSIC} = ?"
 
@@ -163,7 +163,6 @@ class SongRepositoryImpl(
             selection,
             selectionArgs,
             sortOrder
-
         )?.use { cursor ->
             val idCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID)
             val titleCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE)
@@ -174,7 +173,7 @@ class SongRepositoryImpl(
             val sizeCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.SIZE)
 
             while (cursor.moveToNext()) {
-                // Get values of columns for a given audio.
+                //Get values of columns for a given audio.
                 val id = cursor.getLong(idCol)
                 val albumId = cursor.getLong(albumIdColumn)
                 val title = cursor.getString(titleCol)

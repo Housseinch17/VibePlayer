@@ -10,20 +10,11 @@ data class MainPageUiState(
     val progressIndicator: Float = 0f,
     val songState: SongState = SongState.Scanning,
     val mediaPlayerState: MediaPlayerState = MediaPlayerState(),
-    val selectedMainTabs: MainTabs = MainTabs.PLAYLIST,
-    val myPlayList: List<PlayListModel> = listOf(
-        PlayListModel(
-            name = "Friday Chill",
-            total = 2,
-            errorDrawable = R.drawable.favorite_playlist
-        ),
-        PlayListModel(
-            name = "Hypin’ myself up for cleaning",
-            total = 2,
-            errorDrawable = R.drawable.other_playlist
-        ),
-    ),
+    val selectedMainTabs: MainTabs = MainTabs.SONGS,
+    val myPlayList: List<PlayListModel> = emptyList(),
     val favoritePlayList: PlayListModel = PlayListModel(),
+    val isBottomSheetVisible: Boolean = false,
+    val playListTextField: String = "",
 ) {
     val totalSong = if (songState is SongState.TrackList) songState.songList.size else 0
     val progressIndicatorForLinearProgress: Float =
@@ -31,6 +22,8 @@ data class MainPageUiState(
             (progressIndicator / mediaPlayerState.duration.toFloat())
                 .coerceIn(0f, 1f)
         else 0f
+
+    val isCreateEnabled: Boolean = playListTextField.isNotBlank()
 }
 
 sealed interface SongState {

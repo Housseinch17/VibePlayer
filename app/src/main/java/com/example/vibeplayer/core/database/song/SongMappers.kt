@@ -18,6 +18,21 @@ fun List<SongEntity>.toDomainModel(): List<Song> {
     }
 }
 
+fun List<Song>.toSongEntity(): List<SongEntity>{
+    return this.map { song ->
+        SongEntity(
+            id = song.id,
+            songId = song.songId,
+            title = song.title,
+            artist = song.artist,
+            filePath = song.filePath,
+            duration = song.duration,
+            size = song.size,
+            embeddedArt = song.embeddedArt,
+            audioUri = song.audioUri
+        )
+    }
+}
 fun SongEntity.toSong(): Song {
     return Song(
         id = this.id,

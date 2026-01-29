@@ -50,5 +50,8 @@ songs</string>
     <string name="my_playlist">My Playlists (%1$d)</string>
     <string name="create_playlist">Create playlist</string>
     <string name="song">Song</string>
+    <string name="create_new_playlist">Create New Playlist</string>
+    <string name="enter_playlist_name">Enter playlist name</string>
+    <string name="create">Create</string>
 
 </resources>

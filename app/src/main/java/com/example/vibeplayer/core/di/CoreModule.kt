@@ -2,9 +2,11 @@ package com.example.vibeplayer.core.di
 
 import androidx.room.Room
 import com.example.vibeplayer.core.data.PlaybackControllerImpl
+import com.example.vibeplayer.core.data.PlaylistsWithSongsRepositoryImpl
 import com.example.vibeplayer.core.data.SongRepositoryImpl
 import com.example.vibeplayer.core.database.SongDatabase
 import com.example.vibeplayer.core.domain.PlaybackController
+import com.example.vibeplayer.core.domain.PlaylistsWithSongsRepository
 import com.example.vibeplayer.core.domain.SongRepository
 import org.koin.android.ext.koin.androidApplication
 import org.koin.core.module.dsl.singleOf
@@ -22,6 +24,15 @@ val coreModule = module {
     single {
         get<SongDatabase>().songDao
     }
+    single {
+        get<SongDatabase>().playlistDao
+    }
+
+    single {
+        get<SongDatabase>().playlistsAndSongsDao
+    }
+
+    singleOf(::PlaylistsWithSongsRepositoryImpl).bind<PlaylistsWithSongsRepository>()
 
     singleOf(::SongRepositoryImpl).bind<SongRepository>()
 
