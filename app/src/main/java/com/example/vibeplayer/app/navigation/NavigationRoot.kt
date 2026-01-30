@@ -20,6 +20,9 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.example.vibeplayer.core.presentation.ui.ObserveAsEvents
+import com.example.vibeplayer.feature.add_songs.AddSongsEvents
+import com.example.vibeplayer.feature.add_songs.AddSongsScreen
+import com.example.vibeplayer.feature.add_songs.AddSongsViewModel
 import com.example.vibeplayer.feature.main.presentation.MainPageEvents
 import com.example.vibeplayer.feature.main.presentation.MainPageScreen
 import com.example.vibeplayer.feature.main.presentation.MainViewModel
@@ -98,6 +101,13 @@ fun NavigationRoot(
                         }
 
                         MainPageEvents.NavigateToSearch -> backStack.add(NavigationScreens.Search)
+                        is MainPageEvents.NavigateToAddSongs -> {
+                            backStack.add(
+                                NavigationScreens.AddSong(
+                                    events.playlistName
+                                )
+                            )
+                        }
                     }
                 }
 
@@ -187,6 +197,27 @@ fun NavigationRoot(
                     modifier = Modifier.fillMaxSize(),
                     searchUiState = searchUiState,
                     searchActions = searchViewModel::onActions
+                )
+            }
+
+            entry<NavigationScreens.AddSong> { key ->
+                //here to use the key in viewmodel we have to pass it in parametersOf
+                val addSongsViewModel = koinViewModel<AddSongsViewModel> {
+                    parametersOf(key)
+                }
+                val addSongsUiState by addSongsViewModel.state.collectAsStateWithLifecycle()
+
+                ObserveAsEvents(addSongsViewModel.events) { events ->
+                    when (events) {
+                        AddSongsEvents.NavigateBack -> backStack.removeLastOrNull()
+
+                    }
+                }
+
+                AddSongsScreen(
+                    modifier = Modifier.fillMaxSize(),
+                    state = addSongsUiState,
+                    onActions = addSongsViewModel::onActions
                 )
             }
         }

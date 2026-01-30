@@ -9,7 +9,7 @@ import com.example.vibeplayer.core.domain.PlaylistWithSongsDomain
 fun PlaylistWithSongs.toPlaylistWithSongsDomain(): PlaylistWithSongsDomain {
     return PlaylistWithSongsDomain(
         playlist = playlistEntity.toPlaylist(),
-        songs = songs.toDomainModel()
+        songs = songs?.toDomainModel() ?: emptyList()
     )
 }
 

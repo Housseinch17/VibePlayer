@@ -20,4 +20,7 @@ sealed interface NavigationScreens: NavKey {
 
     @Serializable
     data object Search: NavigationScreens
+
+    @Serializable
+    data class AddSong(val playlistName: String): NavigationScreens
 }

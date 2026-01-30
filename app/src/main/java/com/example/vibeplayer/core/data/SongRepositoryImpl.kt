@@ -13,6 +13,7 @@ import com.example.vibeplayer.core.database.song.toSong
 import com.example.vibeplayer.core.domain.Result
 import com.example.vibeplayer.core.domain.Song
 import com.example.vibeplayer.core.domain.SongRepository
+import com.example.vibeplayer.core.presentation.ui.UiText
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -42,7 +43,7 @@ class SongRepositoryImpl(
             if (e is CancellationException) {
                 throw e
             }
-            Result.Error(exception = e)
+            Result.Error(exception = UiText.DynamicString(e.message ?: ""))
         }
     }
 
@@ -64,7 +65,7 @@ class SongRepositoryImpl(
                 if (e is CancellationException) {
                     throw e
                 }
-                Result.Error(e)
+                Result.Error(UiText.DynamicString(e.message ?: ""))
             }
         } else {
             Result.Success(Unit)

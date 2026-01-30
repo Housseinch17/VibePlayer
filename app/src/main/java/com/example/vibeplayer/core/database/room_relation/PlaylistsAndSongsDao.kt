@@ -16,6 +16,10 @@ interface PlaylistsAndSongsDao {
     fun getPlaylistsWithSongs(): Flow<List<PlaylistWithSongs>>
 
     @Transaction
+    @Query("SELECT * FROM playlistentity where playlistName = :playlistName limit 1")
+    fun getPlaylistByName(playlistName: String): Flow<PlaylistWithSongs>
+
+    @Transaction
     @Query("SELECT * FROM songentity")
     fun getSongsWithPlaylists(): Flow<List<SongWithPlaylists>>
 }

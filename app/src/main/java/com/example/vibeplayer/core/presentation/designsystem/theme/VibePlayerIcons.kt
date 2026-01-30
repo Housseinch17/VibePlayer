@@ -51,6 +51,10 @@ object VibePlayerIcons {
         @Composable
         get() = ImageVector.vectorResource(R.drawable.radio_button_selected)
 
+    val SelectedRadioButtonTick: ImageVector
+        @Composable
+        get() = ImageVector.vectorResource(R.drawable.radio_button_tick)
+
     val UnSelectedRadioButton: ImageVector
         @Composable
         get() = ImageVector.vectorResource(R.drawable.radio_button_unselected)

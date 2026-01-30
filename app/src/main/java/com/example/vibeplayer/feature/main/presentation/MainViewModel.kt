@@ -9,8 +9,10 @@ import com.example.vibeplayer.core.domain.PlaylistsWithSongsRepository
 import com.example.vibeplayer.core.domain.Result
 import com.example.vibeplayer.core.domain.Song
 import com.example.vibeplayer.core.domain.SongRepository
+import com.example.vibeplayer.core.presentation.ui.UiText
 import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.onStart
@@ -18,11 +20,13 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.seconds
 
 sealed interface MainPageEvents {
     data object NavigateToScanMusic : MainPageEvents
     data class NavigateToNowPlaying(val nowPlayingData: NowPlayingData) : MainPageEvents
     data object NavigateToSearch : MainPageEvents
+    data class NavigateToAddSongs(val playlistName: String) : MainPageEvents
 }
 
 sealed interface MainPageActions {
@@ -32,12 +36,12 @@ sealed interface MainPageActions {
     data object NavigateToSearch : MainPageActions
     data object NavigateAndPlay : MainPageActions
     data object NavigateAndShuffle : MainPageActions
+    data object NavigateToAddSongs : MainPageActions
     data object SetCurrentSong : MainPageActions
     data object Play : MainPageActions
     data object Pause : MainPageActions
     data object PlayNext : MainPageActions
     data object PlayPrevious : MainPageActions
-    data object OnCreatePlayListClick : MainPageActions
     data class UpdateMainTabs(val mainTabs: MainTabs) : MainPageActions
     data object ShowBottomSheet : MainPageActions
     data object HideBottomSheet : MainPageActions
@@ -62,6 +66,7 @@ class MainViewModel(
         SharingStarted.Lazily,
         MainPageUiState()
     )
+
     private val _mainPageEvents = Channel<MainPageEvents>()
     val mainPageEvents = _mainPageEvents.receiveAsFlow()
 
@@ -93,7 +98,7 @@ class MainViewModel(
             MainPageActions.Play -> play()
             MainPageActions.PlayNext -> playNext()
             MainPageActions.PlayPrevious -> playPrevious()
-            MainPageActions.OnCreatePlayListClick -> create()
+            MainPageActions.NavigateToAddSongs -> navigateToAddSongs()
             MainPageActions.ShowBottomSheet -> showBottomSheet()
             MainPageActions.HideBottomSheet -> hideBottomSheet()
         }
@@ -113,7 +118,6 @@ class MainViewModel(
         }
     }
 
-
     private fun setProgressIndicator() {
         viewModelScope.launch {
             playbackController.currentProgressIndicator.collect { progressIndicator ->
@@ -128,16 +132,34 @@ class MainViewModel(
 
     private fun setPlayLists() {
         viewModelScope.launch {
-            val favoritePlayList = PlayListModel(
-                "Favorite",
-                total = 2,
-                embeddedArt = null,
-                errorDrawable = R.drawable.favorite_playlist
-            )
-            _mainPageUiState.update { newState ->
-                newState.copy(
-                    favoritePlayList = favoritePlayList,
-                )
+            playlistsWithSongsRepository.getPlaylistsWithSongs().collect { playlistsWithSongs ->
+                val favourite = playlistsWithSongs.firstOrNull {
+                    it.playlist.playlistName == "Favourite"
+                }?.let { (playlist, songs) ->
+                    PlayListModel(
+                        name = playlist.playlistName,
+                        total = songs.size,
+                        embeddedArt = songs.firstOrNull()?.embeddedArt
+                    )
+                }
+
+                val myPlaylists = playlistsWithSongs.filter {
+                    it.playlist.playlistName != "Favourite"
+                }.map { (playlist, songs) ->
+                    PlayListModel(
+                        name = playlist.playlistName,
+                        total = songs.size,
+                        embeddedArt = songs.firstOrNull()?.embeddedArt
+                    )
+                }
+
+                _mainPageUiState.update { newState ->
+                    newState.copy(
+                        favoritePlayList = favourite ?: PlayListModel(),
+                        myPlayList = myPlaylists
+
+                    )
+                }
             }
         }
     }
@@ -251,14 +273,42 @@ class MainViewModel(
         }
     }
 
-    private fun create() {
-        val playlistName = _mainPageUiState.value.playListTextField
-        val selectedSongsId = listOf(1,2,3,4,5)
+    private fun navigateToAddSongs() {
         viewModelScope.launch {
-            playlistsWithSongsRepository.createPlaylistWithSongs(
-                playlistName = playlistName,
-                selectedSongIds = selectedSongsId
-            )
+            val playlistName = _mainPageUiState.value.playListTextField
+            val playlistAlreadyExists =
+                playlistsWithSongsRepository.playlistAlreadyExists(playlistName = playlistName)
+            when (playlistAlreadyExists) {
+                true -> {
+                    showSnackbarMessage(UiText.StringResource(R.string.playlist_already_exist))
+                }
+
+                else -> {
+                    _mainPageEvents.send(MainPageEvents.NavigateToAddSongs(playlistName = playlistName))
+                }
+            }
+            _mainPageUiState.update { newState ->
+                newState.copy(
+                    playListTextField = "",
+                    isBottomSheetVisible = false
+                )
+            }
+        }
+    }
+
+    private fun showSnackbarMessage(snackbarMessage: UiText?) {
+        viewModelScope.launch {
+            _mainPageUiState.update { newState ->
+                newState.copy(
+                    snackbarMessage = snackbarMessage
+                )
+            }
+            delay(1.seconds)
+            _mainPageUiState.update { newState ->
+                newState.copy(
+                    snackbarMessage = null
+                )
+            }
         }
     }
 

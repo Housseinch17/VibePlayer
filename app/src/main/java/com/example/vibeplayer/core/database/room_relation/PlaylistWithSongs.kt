@@ -15,5 +15,5 @@ data class PlaylistWithSongs(
         entityColumn = "id",
         associateBy = Junction(PlaylistsAndSongsEntity::class)
     )
-    val songs: List<SongEntity>
+    val songs: List<SongEntity>?
 )

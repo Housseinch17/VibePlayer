@@ -4,6 +4,7 @@ import androidx.annotation.StringRes
 import com.example.vibeplayer.R
 import com.example.vibeplayer.core.domain.MediaPlayerState
 import com.example.vibeplayer.core.domain.Song
+import com.example.vibeplayer.core.presentation.ui.UiText
 
 data class MainPageUiState(
     val currentSong: Song = Song(),
@@ -15,6 +16,7 @@ data class MainPageUiState(
     val favoritePlayList: PlayListModel = PlayListModel(),
     val isBottomSheetVisible: Boolean = false,
     val playListTextField: String = "",
+    val snackbarMessage: UiText? = null
 ) {
     val totalSong = if (songState is SongState.TrackList) songState.songList.size else 0
     val progressIndicatorForLinearProgress: Float =

@@ -29,8 +29,11 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -56,6 +59,7 @@ import com.example.vibeplayer.core.presentation.designsystem.components.VibePlay
 import com.example.vibeplayer.core.presentation.designsystem.components.VibePlayerMiniBar
 import com.example.vibeplayer.core.presentation.designsystem.components.VibePlayerOutlinedButtonWithIcon
 import com.example.vibeplayer.core.presentation.designsystem.components.VibePlayerPrimaryButton
+import com.example.vibeplayer.core.presentation.designsystem.components.VibePlayerSnackbar
 import com.example.vibeplayer.core.presentation.designsystem.components.rotationIfScanning
 import com.example.vibeplayer.core.presentation.designsystem.theme.TextPrimary
 import com.example.vibeplayer.core.presentation.designsystem.theme.VibePlayerIcons
@@ -84,6 +88,18 @@ fun MainPageScreen(
     val showFAB by remember {
         derivedStateOf {
             lazyListState.firstVisibleItemIndex > 10
+        }
+    }
+
+    val snackBarHostState = remember { SnackbarHostState() }
+    val context = LocalContext.current
+
+    LaunchedEffect(mainPageUiState.snackbarMessage) {
+        if (mainPageUiState.snackbarMessage != null) {
+            snackBarHostState.showSnackbar(
+                message = mainPageUiState.snackbarMessage.asString(context = context),
+                withDismissAction = false
+            )
         }
     }
 
@@ -147,6 +163,16 @@ fun MainPageScreen(
                     },
                 )
             }
+        },
+        snackbarHost = {
+            SnackbarHost(
+                hostState = snackBarHostState,
+                snackbar = { data ->
+                    VibePlayerSnackbar(
+                        snackbarData = data
+                    )
+                }
+            )
         }
     ) { innerPadding ->
         Column(
@@ -212,7 +238,7 @@ fun MainPageScreen(
                         isBottomSheetVisible = mainPageUiState.isBottomSheetVisible,
                         isCreateEnabled = mainPageUiState.isCreateEnabled,
                         onCreateClick = {
-                            onActions(MainPageActions.OnCreatePlayListClick)
+                            onActions(MainPageActions.NavigateToAddSongs)
                         },
                         onCancelClick = {
                             onActions(MainPageActions.HideBottomSheet)
@@ -412,6 +438,7 @@ fun SongsContent(
     }
 }
 
+@SuppressLint("LocalContextResourcesRead")
 @Composable
 fun PlaylistContent(
     modifier: Modifier = Modifier,
@@ -515,6 +542,7 @@ fun MyPlaylists(
     }
 }
 
+@SuppressLint("LocalContextResourcesRead")
 @Composable
 fun PlaylistItem(
     modifier: Modifier = Modifier,
@@ -664,13 +692,14 @@ fun EmptyState(
 @Composable
 fun SongItem(
     modifier: Modifier = Modifier,
-    onSongItemClick: () -> Unit,
+    onSongItemClick: () -> Unit = {},
+    enabled: Boolean = true,
     song: Song
 ) {
     Row(
         modifier = modifier
             .padding(vertical = 12.dp)
-            .clickable(onClick = onSongItemClick),
+            .clickable(onClick = onSongItemClick, enabled = enabled),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         VibePlayerAsyncImage(

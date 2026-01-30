@@ -24,7 +24,6 @@ sealed interface ScanMusicActions {
     data class SelectSize(val size: String) : ScanMusicActions
     data object Scan : ScanMusicActions
     data object NavigateBack : ScanMusicActions
-    data class UpdateSnackbarMessage(val snackbarMessage: UiText) : ScanMusicActions
 }
 
 class ScanMusicViewModel(
@@ -42,7 +41,6 @@ class ScanMusicViewModel(
             is ScanMusicActions.SelectSize -> selectSize(size = scanMusicActions.size)
             ScanMusicActions.Scan -> scan()
             ScanMusicActions.NavigateBack -> navigateBack()
-            is ScanMusicActions.UpdateSnackbarMessage -> updateSnackbarMessage(snackbarMessage = scanMusicActions.snackbarMessage)
         }
     }
 
@@ -100,14 +98,6 @@ class ScanMusicViewModel(
                     snackbarMessage = null
                 )
             }
-        }
-    }
-
-    private fun updateSnackbarMessage(snackbarMessage: UiText?) {
-        _scanMusicUi.update { newState ->
-            newState.copy(
-                snackbarMessage = snackbarMessage
-            )
         }
     }
 
