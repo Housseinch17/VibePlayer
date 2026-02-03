@@ -1,5 +1,6 @@
 package com.example.vibeplayer.app.navigation
 
+import android.widget.Toast
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.tween
@@ -13,6 +14,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.entryProvider
@@ -159,11 +161,20 @@ fun NavigationRoot(
                     initialValue = NowPlayingUiState()
                 )
 
+                val context = LocalContext.current
                 ObserveAsEvents(nowPlayingViewModel.nowPlayingEvents) { events ->
                     when (events) {
                         is NowPlayingEvents.Minimize -> {
                             isMinimized = true
                             backStack.removeLastOrNull()
+                        }
+
+                        is NowPlayingEvents.ShowToast -> {
+                            Toast.makeText(
+                                context,
+                                events.message.asString(context = context),
+                                Toast.LENGTH_LONG
+                            ).show()
                         }
                     }
                 }

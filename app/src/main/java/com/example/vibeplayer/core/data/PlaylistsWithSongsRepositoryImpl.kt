@@ -1,6 +1,7 @@
 package com.example.vibeplayer.core.data
 
 import com.example.vibeplayer.R
+import com.example.vibeplayer.core.data.Constants.FAVOURITE
 import com.example.vibeplayer.core.database.playlist.PlaylistDao
 import com.example.vibeplayer.core.database.playlist.PlaylistEntity
 import com.example.vibeplayer.core.database.room_relation.PlaylistsAndSongsDao
@@ -10,6 +11,7 @@ import com.example.vibeplayer.core.domain.PlaylistWithSongsDomain
 import com.example.vibeplayer.core.domain.PlaylistsWithSongsRepository
 import com.example.vibeplayer.core.domain.Result
 import com.example.vibeplayer.core.presentation.ui.UiText
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -24,9 +26,9 @@ class PlaylistsWithSongsRepositoryImpl(
 ) : PlaylistsWithSongsRepository {
     init {
         applicationScope.launch {
-            val favouritePlaylistExists = playlistAlreadyExists(playlistName = "Favourite")
+            val favouritePlaylistExists = playlistAlreadyExists(playlistName = FAVOURITE)
             if (!favouritePlaylistExists) {
-                saveEmptyPlaylist(playlistName = "Favourite")
+                saveEmptyPlaylist(playlistName = FAVOURITE)
             }
         }
     }
@@ -82,6 +84,20 @@ class PlaylistsWithSongsRepositoryImpl(
             }.flowOn(Dispatchers.IO)
     }
 
+    override suspend fun isSongInFavourite(songDbId: Int): Flow<Boolean> {
+        return playlistsAndSongsDao.isSongInFavourite(songDbId)
+    }
+
+    override suspend fun isSongAlreadyExistInPlaylist(
+        playlistName: String,
+        songDbId: Int
+    ): Boolean {
+        return playlistsAndSongsDao.isSongAlreadyExistInPlaylist(
+            playlistName = playlistName,
+            songDbId = songDbId
+        )
+    }
+
     //this is only used when the user navigate back before saving any songs to playlist
     //so we have to save playlist only
     override suspend fun saveEmptyPlaylist(playlistName: String) {
@@ -95,5 +111,43 @@ class PlaylistsWithSongsRepositoryImpl(
 
     override suspend fun playlistAlreadyExists(playlistName: String): Boolean {
         return playlistDao.playlistAlreadyExists(playlistName = playlistName)
+    }
+
+    override suspend fun addSongToPlaylist(playListName: String, songDbId: Int): Result<Unit> {
+        val playlistId = getPlaylistIdByName(playListName)
+        return try {
+            playlistsAndSongsDao.addSongToPlaylist(
+                crossRef = PlaylistsAndSongsEntity(
+                    playlistId = playlistId,
+                    id = songDbId
+                ),
+            )
+            Result.Success(Unit)
+        } catch (e: Exception) {
+            if (e is CancellationException) {
+                throw e
+            }
+            Result.Error(exception = UiText.DynamicString(e.message ?: ""))
+        }
+    }
+
+    override suspend fun removeSongFromPlaylist(playlistName: String, songDbId: Int): Result<Unit> {
+        val playlistId = getPlaylistIdByName(playlistName)
+        return try {
+            playlistsAndSongsDao.deleteSongFromPlaylist(
+                playlistId = playlistId,
+                songDbId = songDbId
+            )
+            Result.Success(Unit)
+        } catch (e: Exception) {
+            if (e is CancellationException) {
+                throw e
+            }
+            Result.Error(exception = UiText.DynamicString(e.message ?: ""))
+        }
+    }
+
+    private suspend fun getPlaylistIdByName(name: String): Int {
+        return playlistDao.getPlaylistIdByName(name)
     }
 }

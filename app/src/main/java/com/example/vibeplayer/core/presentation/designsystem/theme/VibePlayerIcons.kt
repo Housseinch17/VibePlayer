@@ -90,4 +90,20 @@ object VibePlayerIcons {
     val MenuDots: ImageVector
         @Composable
         get() = ImageVector.vectorResource(R.drawable.menu_dots)
+
+    val Favourite: ImageVector
+        @Composable
+        get() = ImageVector.vectorResource(R.drawable.favourite)
+
+    val FavouriteSelected: ImageVector
+        @Composable
+        get() = ImageVector.vectorResource(R.drawable.favourite_selected)
+
+    val Playlist: ImageVector
+        @Composable
+        get() = ImageVector.vectorResource(R.drawable.playlist)
+
+    val PlaylistCreate: ImageVector
+        @Composable
+        get() = ImageVector.vectorResource(R.drawable.playlist_create)
 }

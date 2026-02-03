@@ -13,7 +13,7 @@ data class MainPageUiState(
     val mediaPlayerState: MediaPlayerState = MediaPlayerState(),
     val selectedMainTabs: MainTabs = MainTabs.SONGS,
     val myPlayList: List<PlayListModel> = emptyList(),
-    val favoritePlayList: PlayListModel = PlayListModel(),
+    val favouritePlayList: PlayListModel = PlayListModel(),
     val isBottomSheetVisible: Boolean = false,
     val playListTextField: String = "",
     val snackbarMessage: UiText? = null

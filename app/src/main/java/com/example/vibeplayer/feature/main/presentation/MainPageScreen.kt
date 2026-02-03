@@ -24,7 +24,6 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -46,9 +45,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.vibeplayer.R
 import com.example.vibeplayer.app.domain.NowPlayingData
@@ -58,6 +55,7 @@ import com.example.vibeplayer.core.presentation.designsystem.components.VibePlay
 import com.example.vibeplayer.core.presentation.designsystem.components.VibePlayerIconShape
 import com.example.vibeplayer.core.presentation.designsystem.components.VibePlayerMiniBar
 import com.example.vibeplayer.core.presentation.designsystem.components.VibePlayerOutlinedButtonWithIcon
+import com.example.vibeplayer.core.presentation.designsystem.components.VibePlayerPlaylistItem
 import com.example.vibeplayer.core.presentation.designsystem.components.VibePlayerPrimaryButton
 import com.example.vibeplayer.core.presentation.designsystem.components.VibePlayerSnackbar
 import com.example.vibeplayer.core.presentation.designsystem.components.rotationIfScanning
@@ -227,7 +225,7 @@ fun MainPageScreen(
                         onMainTabsSelect = { mainTabs ->
                             onActions(MainPageActions.UpdateMainTabs(mainTabs = mainTabs))
                         },
-                        favoritePlayList = mainPageUiState.favoritePlayList,
+                        favouritePlayList = mainPageUiState.favouritePlayList,
                         onMenuDotsClick = {
 
                         },
@@ -268,7 +266,7 @@ fun TrackListState(
     onShuffleClick: () -> Unit,
     onPlayClick: () -> Unit,
     onMainTabsSelect: (MainTabs) -> Unit,
-    favoritePlayList: PlayListModel,
+    favouritePlayList: PlayListModel,
     onMenuDotsClick: (PlayListModel) -> Unit,
     myPlatListList: List<PlayListModel>,
     onCreatePlayList: () -> Unit,
@@ -335,7 +333,7 @@ fun TrackListState(
                     PlaylistContent(
                         totalPlaylist = totalPlaylist,
                         onAddClick = onCreatePlayList,
-                        favoritePlayList = favoritePlayList,
+                        favouritePlayList = favouritePlayList,
                         onMenuDotsClick = onMenuDotsClick,
                         myPlatListList = myPlatListList,
                         onCreatePlayList = onCreatePlayList,
@@ -444,7 +442,7 @@ fun PlaylistContent(
     modifier: Modifier = Modifier,
     totalPlaylist: Int,
     onAddClick: () -> Unit,
-    favoritePlayList: PlayListModel,
+    favouritePlayList: PlayListModel,
     myPlatListList: List<PlayListModel>,
     onMenuDotsClick: (PlayListModel) -> Unit,
     onCreatePlayList: () -> Unit,
@@ -485,9 +483,9 @@ fun PlaylistContent(
                 onClick = onAddClick
             )
         }
-        PlaylistItem(
-            playListModel = favoritePlayList,
-            onMenuDotsClick = { onMenuDotsClick(favoritePlayList) }
+        VibePlayerPlaylistItem(
+            playListModel = favouritePlayList,
+            onMenuDotsClick = { onMenuDotsClick(favouritePlayList) }
         )
         Text(
             modifier = Modifier,
@@ -528,7 +526,7 @@ fun MyPlaylists(
         modifier = modifier.fillMaxWidth()
     ) {
         items(myPlatListList) { playListModel ->
-            PlaylistItem(
+            VibePlayerPlaylistItem(
                 playListModel = playListModel,
                 onMenuDotsClick = {
                     onMenuDotsClick(playListModel)
@@ -539,66 +537,6 @@ fun MyPlaylists(
                 color = MaterialTheme.colorScheme.surfaceOutline
             )
         }
-    }
-}
-
-@SuppressLint("LocalContextResourcesRead")
-@Composable
-fun PlaylistItem(
-    modifier: Modifier = Modifier,
-    playListModel: PlayListModel,
-    onMenuDotsClick: (PlayListModel) -> Unit,
-) {
-    val context = LocalContext.current
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        VibePlayerAsyncImage(
-            modifier = Modifier
-                .size(64.dp)
-                .clip(CircleShape),
-            imageUrl = playListModel.embeddedArt,
-            contentDescription = stringResource(R.string.playlist_image),
-            errorDrawable = playListModel.errorDrawable,
-        )
-        Spacer(modifier = Modifier.width(12.dp))
-        Column(
-            modifier = Modifier.weight(1f),
-        ) {
-            Text(
-                modifier = Modifier,
-                text = playListModel.name,
-                style = MaterialTheme.typography.titleMedium.copy(
-                    color = MaterialTheme.colorScheme.textPrimary,
-                    textAlign = TextAlign.Start,
-                    fontWeight = FontWeight.Bold
-                ),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-            Spacer(modifier = Modifier.height(2.dp))
-            Text(
-                modifier = Modifier,
-                text = if (playListModel.total == 0) "0 ${stringResource(R.string.song)}"
-                else context.resources.getQuantityString(
-                    R.plurals.song_size,
-                    playListModel.total,
-                    playListModel.total
-                ),
-                style = MaterialTheme.typography.bodyMediumRegular.copy(
-                    color = MaterialTheme.colorScheme.textSecondary,
-                    textAlign = TextAlign.Start
-                )
-            )
-        }
-        Image(
-            modifier = Modifier.clickable(onClick = { onMenuDotsClick(playListModel) }),
-            imageVector = VibePlayerIcons.MenuDots,
-            contentDescription = stringResource(R.string.menu_dots),
-        )
     }
 }
 

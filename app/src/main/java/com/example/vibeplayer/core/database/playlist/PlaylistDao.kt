@@ -17,4 +17,7 @@ interface PlaylistDao {
     @Query("SELECT * FROM playlistentity WHERE playlistName = :name LIMIT 1")
     suspend fun getPlaylistByName(name: String): PlaylistEntity?
 
+    @Query("SELECT playlistId FROM playlistentity WHERE playlistName = :name LIMIT 1")
+    suspend fun getPlaylistIdByName(name: String): Int
+
 }

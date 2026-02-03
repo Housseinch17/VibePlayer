@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.vibeplayer.R
 import com.example.vibeplayer.app.domain.NowPlayingData
+import com.example.vibeplayer.core.data.Constants.FAVOURITE
 import com.example.vibeplayer.core.domain.PlaybackController
 import com.example.vibeplayer.core.domain.PlaylistsWithSongsRepository
 import com.example.vibeplayer.core.domain.Result
@@ -134,7 +135,7 @@ class MainViewModel(
         viewModelScope.launch {
             playlistsWithSongsRepository.getPlaylistsWithSongs().collect { playlistsWithSongs ->
                 val favourite = playlistsWithSongs.firstOrNull {
-                    it.playlist.playlistName == "Favourite"
+                    it.playlist.playlistName == FAVOURITE
                 }?.let { (playlist, songs) ->
                     PlayListModel(
                         name = playlist.playlistName,
@@ -144,7 +145,7 @@ class MainViewModel(
                 }
 
                 val myPlaylists = playlistsWithSongs.filter {
-                    it.playlist.playlistName != "Favourite"
+                    it.playlist.playlistName != FAVOURITE
                 }.map { (playlist, songs) ->
                     PlayListModel(
                         name = playlist.playlistName,
@@ -155,7 +156,7 @@ class MainViewModel(
 
                 _mainPageUiState.update { newState ->
                     newState.copy(
-                        favoritePlayList = favourite ?: PlayListModel(),
+                        favouritePlayList = favourite ?: PlayListModel(),
                         myPlayList = myPlaylists
 
                     )
