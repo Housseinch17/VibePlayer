@@ -179,11 +179,11 @@ fun NowPlayingScreen(
                     onValueChange = { newValue ->
                         nowPlayingActions(NowPlayingActions.UpdatePlaylistTextField(newValue))
                     },
-                    isCreateEnabled = nowPlayingUiState.isCreateEnabled,
+                    isButtonEnabled = nowPlayingUiState.isCreateEnabled,
                     onCancelClick = {
                         nowPlayingActions(NowPlayingActions.HideCreatePlaylistBottomSheet)
                     },
-                    onCreateClick = {
+                    onButtonClick = {
                         nowPlayingActions(NowPlayingActions.SaveToNewPlaylist)
                     }
                 )

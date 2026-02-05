@@ -93,6 +93,7 @@ fun NavigationRoot(
                 val mainViewModel = koinViewModel<MainViewModel>()
                 val mainUiState by mainViewModel.mainPageUiState.collectAsStateWithLifecycle()
 
+                val context = LocalContext.current
                 ObserveAsEvents(mainViewModel.mainPageEvents) { events ->
                     when (events) {
                         MainPageEvents.NavigateToScanMusic -> backStack.add(NavigationScreens.ScanMusic)
@@ -109,6 +110,16 @@ fun NavigationRoot(
                                     events.playlistName
                                 )
                             )
+                        }
+
+                        is MainPageEvents.ShowToast -> Toast.makeText(
+                            context,
+                            events.message.asString(context = context),
+                            Toast.LENGTH_LONG
+                        ).show()
+
+                        is MainPageEvents.NavigateToPlaylist -> {
+
                         }
                     }
                 }

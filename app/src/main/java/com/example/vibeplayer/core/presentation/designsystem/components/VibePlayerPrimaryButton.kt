@@ -25,6 +25,7 @@ import com.example.vibeplayer.core.presentation.designsystem.theme.TextDisabled
 import com.example.vibeplayer.core.presentation.designsystem.theme.TextPrimary
 import com.example.vibeplayer.core.presentation.designsystem.theme.VibePlayerIcons
 import com.example.vibeplayer.core.presentation.designsystem.theme.bodyLargeMedium
+import com.example.vibeplayer.core.presentation.designsystem.theme.buttonDestructive
 import com.example.vibeplayer.core.presentation.designsystem.theme.buttonHover
 import com.example.vibeplayer.core.presentation.designsystem.theme.buttonPrimary
 import com.example.vibeplayer.core.presentation.designsystem.theme.textDisabled
@@ -40,6 +41,7 @@ fun VibePlayerPrimaryButton(
     buttonContentIconImageVector: ImageVector = VibePlayerIcons.Loader,
     buttonContentIconDescription: String = stringResource(R.string.loader),
     buttonContentText: String = stringResource(R.string.scanning),
+    isButtonDestructive: Boolean = false,
     onclick: () -> Unit = {}
 ) {
     Button(
@@ -48,7 +50,7 @@ fun VibePlayerPrimaryButton(
         onClick = { onclick() },
         enabled = isEnabled,
         colors = ButtonDefaults.buttonColors(
-            containerColor = if (!isScanning) MaterialTheme.colorScheme.buttonPrimary else MaterialTheme.colorScheme.buttonHover,
+            containerColor = if (isButtonDestructive) MaterialTheme.colorScheme.buttonDestructive else if (!isScanning) MaterialTheme.colorScheme.buttonPrimary else MaterialTheme.colorScheme.buttonHover,
             disabledContainerColor = if (!isScanning) ButtonHover else MaterialTheme.colorScheme.textDisabled,
             contentColor = if (isScanning) MaterialTheme.colorScheme.buttonHover else MaterialTheme.colorScheme.textPrimary
         )

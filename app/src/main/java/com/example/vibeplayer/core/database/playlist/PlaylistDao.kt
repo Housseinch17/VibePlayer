@@ -1,8 +1,10 @@
 package com.example.vibeplayer.core.database.playlist
 
+import android.net.Uri
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
+import androidx.room.Upsert
 
 @Dao
 interface PlaylistDao {
@@ -19,5 +21,15 @@ interface PlaylistDao {
 
     @Query("SELECT playlistId FROM playlistentity WHERE playlistName = :name LIMIT 1")
     suspend fun getPlaylistIdByName(name: String): Int
+
+    @Upsert
+    suspend fun renamePlaylistName(playlistEntity: PlaylistEntity)
+
+    @Upsert
+    suspend fun changeCover(playlistEntity: PlaylistEntity)
+
+    @Query("SELECT embeddedUri from playlistentity WHERE playlistName = :playlistName LIMIT 1")
+    suspend fun getCoverImage(playlistName: String): Uri?
+
 
 }

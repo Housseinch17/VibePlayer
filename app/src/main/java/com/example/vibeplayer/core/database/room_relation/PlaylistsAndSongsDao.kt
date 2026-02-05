@@ -21,7 +21,13 @@ interface PlaylistsAndSongsDao {
     fun isSongInFavourite(songDbId: Int): Flow<Boolean>
 
     @Query("SELECT EXISTS(SELECT 1 FROM playlistsandsongsentity JOIN playlistentity ON playlistentity.playlistId = playlistsandsongsentity.playlistId WHERE playlistentity.playlistName = :playlistName AND playlistsandsongsentity.id = :songDbId )")
-    suspend fun isSongAlreadyExistInPlaylist(playlistName: String,songDbId: Int): Boolean
+    suspend fun isSongAlreadyExistInPlaylist(playlistName: String, songDbId: Int): Boolean
+
+    @Query("DELETE FROM PlaylistsAndSongsEntity WHERE playlistId IN ( SELECT playlistId FROM PlaylistEntity WHERE playlistName = :playlistName)")
+    suspend fun deleteSongsFromPlaylistByName(playlistName: String)
+
+    @Query("DELETE FROM PlaylistEntity WHERE playlistName = :playlistName")
+    suspend fun deletePlaylistByName(playlistName: String)
 
     //prevents duplicates
     @Insert(onConflict = OnConflictStrategy.IGNORE)

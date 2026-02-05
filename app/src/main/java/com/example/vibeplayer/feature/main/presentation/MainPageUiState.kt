@@ -14,9 +14,14 @@ data class MainPageUiState(
     val selectedMainTabs: MainTabs = MainTabs.SONGS,
     val myPlayList: List<PlayListModel> = emptyList(),
     val favouritePlayList: PlayListModel = PlayListModel(),
-    val isBottomSheetVisible: Boolean = false,
+    val isShowCreatePlaylistBottomSheetVisible: Boolean = false,
     val playListTextField: String = "",
-    val snackbarMessage: UiText? = null
+    val snackbarMessage: UiText? = null,
+    val currentPlaylist: PlayListModel = PlayListModel(),
+    val showCurrentPlaylistBottomSheet: Boolean = false,
+    val showRenameBottomSheet: Boolean = false,
+    val renameTextField: String = "",
+    val showDeleteBottomSheet: Boolean = false,
 ) {
     val totalSong = if (songState is SongState.TrackList) songState.songList.size else 0
     val progressIndicatorForLinearProgress: Float =
@@ -26,6 +31,7 @@ data class MainPageUiState(
         else 0f
 
     val isCreateEnabled: Boolean = playListTextField.isNotBlank()
+    val isRenameEnabled: Boolean = renameTextField.isNotBlank() && renameTextField != currentPlaylist.name
 }
 
 sealed interface SongState {

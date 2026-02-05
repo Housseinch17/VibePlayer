@@ -1,7 +1,11 @@
 package com.example.vibeplayer.core.data
 
+import android.content.Context
+import android.net.Uri
+import androidx.room.withTransaction
 import com.example.vibeplayer.R
 import com.example.vibeplayer.core.data.Constants.FAVOURITE
+import com.example.vibeplayer.core.database.SongDatabase
 import com.example.vibeplayer.core.database.playlist.PlaylistDao
 import com.example.vibeplayer.core.database.playlist.PlaylistEntity
 import com.example.vibeplayer.core.database.room_relation.PlaylistsAndSongsDao
@@ -22,7 +26,9 @@ import kotlinx.coroutines.launch
 class PlaylistsWithSongsRepositoryImpl(
     val playlistDao: PlaylistDao,
     val playlistsAndSongsDao: PlaylistsAndSongsDao,
-    applicationScope: CoroutineScope
+    applicationScope: CoroutineScope,
+    val songDatabase: SongDatabase,
+    val context: Context
 ) : PlaylistsWithSongsRepository {
     init {
         applicationScope.launch {
@@ -127,7 +133,7 @@ class PlaylistsWithSongsRepositoryImpl(
             if (e is CancellationException) {
                 throw e
             }
-            Result.Error(exception = UiText.DynamicString(e.message ?: ""))
+            Result.Error(exception = UiText.DynamicString(e.localizedMessage ?: ""))
         }
     }
 
@@ -143,7 +149,70 @@ class PlaylistsWithSongsRepositoryImpl(
             if (e is CancellationException) {
                 throw e
             }
-            Result.Error(exception = UiText.DynamicString(e.message ?: ""))
+            Result.Error(exception = UiText.DynamicString(e.localizedMessage ?: ""))
+        }
+    }
+
+    override suspend fun deletePlaylist(playlistName: String): Result<Unit> {
+        return try {
+            //if one delete operation succeed and the second failed
+            //withTransaction will handle this case where it will fail both of one failed
+            //and it wont finish the work unless all succeed and no exception thrown
+            //otherwise nothing would happen if one operation fail/throw exception
+            songDatabase.withTransaction {
+                playlistsAndSongsDao.deleteSongsFromPlaylistByName(playlistName = playlistName)
+                playlistsAndSongsDao.deletePlaylistByName(playlistName = playlistName)
+            }
+            Result.Success(Unit)
+        } catch (e: Exception) {
+            if (e is CancellationException) {
+                throw e
+            }
+            Result.Error(UiText.DynamicString(e.localizedMessage ?: ""))
+        }
+    }
+
+    override suspend fun changeCover(playlistName: String, embeddedUri: Uri): Result<Unit> {
+        val playlistId = getPlaylistIdByName(name = playlistName)
+        val oldEntity = playlistDao.getPlaylistByName(playlistName)
+        val newPlaylistEntity = oldEntity?.copy(
+            embeddedUri = embeddedUri
+        ) ?: PlaylistEntity(
+            playlistId = playlistId,
+            playlistName = playlistName,
+            embeddedUri = embeddedUri
+        )
+            //change cover image to new one
+            playlistDao.changeCover(playlistEntity = newPlaylistEntity)
+            return try {
+                Result.Success(Unit)
+            } catch (e: Exception) {
+                // Rollback DB
+                playlistDao.changeCover(oldEntity!!)
+                if (e is CancellationException) {
+                    throw e
+                }
+                Result.Error(UiText.DynamicString(e.localizedMessage ?: ""))
+        }
+    }
+
+    override suspend fun renamePlaylistName(
+        playlistName: String,
+        newPlaylistName: String
+    ): Result<Unit> {
+        val playlistId = getPlaylistIdByName(name = playlistName)
+        val newPlaylistEntity = PlaylistEntity(
+            playlistName = newPlaylistName,
+            playlistId = playlistId
+        )
+        return try {
+            playlistDao.renamePlaylistName(playlistEntity = newPlaylistEntity)
+            Result.Success(Unit)
+        } catch (e: Exception) {
+            if (e is CancellationException) {
+                throw e
+            }
+            Result.Error(UiText.DynamicString(e.localizedMessage ?: ""))
         }
     }
 

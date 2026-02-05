@@ -65,5 +65,16 @@ songs</string>
     <string name="add_to_playlist">Add to Playlist</string>
     <string name="added_to_playlist">Added to Playlist %1$s</string>
     <string name="song_already_exists_in_playlist">Song already exists in %1$s</string>
+    <string name="delete">Delete</string>
+    <string name="change_cover">Change Cover</string>
+    <string name="rename">Rename</string>
+    <string name="successfully_renamed">Successfully renamed!</string>
+    <string name="successfully_deleted">Successfully deleted!</string>
+    <string name="successfully_changed_cover">Successfully changed cover!</string>
+    <string name="rename_playlist">Rename Playlist</string>
+    <string name="delete_playlist">Delete Playlist</string>
+    <string name="delete_description">Are you sure you want to delete playlist New Playlist?</string>
+    <string name="camera_permission_denied">Camera permission denied</string>
+    <string name="change_cover_failed">Failed to change cover!</string>
 
 </resources>

@@ -10,6 +10,6 @@ val TextDisabled = Color(0xFF4C647C)
 val SurfaceBg = Color(0xFF0A131D)
 val Accent = Color(0xFFF1FF95)
 
-val ShadowColor = Color(0x40C277FF)
+val ButtonDestructive = Color(0xFFFFF5667)
 
 val SurfaceOutline = Color(0xFF1A2735)

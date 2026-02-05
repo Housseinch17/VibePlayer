@@ -1,5 +1,6 @@
 package com.example.vibeplayer.feature.main.presentation
 
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.vibeplayer.R
@@ -28,6 +29,8 @@ sealed interface MainPageEvents {
     data class NavigateToNowPlaying(val nowPlayingData: NowPlayingData) : MainPageEvents
     data object NavigateToSearch : MainPageEvents
     data class NavigateToAddSongs(val playlistName: String) : MainPageEvents
+    data class ShowToast(val message: UiText) : MainPageEvents
+    data class NavigateToPlaylist(val playlistId: Int): MainPageEvents
 }
 
 sealed interface MainPageActions {
@@ -44,9 +47,21 @@ sealed interface MainPageActions {
     data object PlayNext : MainPageActions
     data object PlayPrevious : MainPageActions
     data class UpdateMainTabs(val mainTabs: MainTabs) : MainPageActions
-    data object ShowBottomSheet : MainPageActions
+    data object ShowCreatePlaylistBottomSheet : MainPageActions
     data object HideBottomSheet : MainPageActions
     data class UpdatePlaylistTextField(val value: String) : MainPageActions
+    data class OnPlaylist(val playlistId: Int) : MainPageActions
+    data object ShowRenameBottomSheet : MainPageActions
+    data object HideRenameBottomSheet : MainPageActions
+    data object OnRename : MainPageActions
+    data class OnChangeCover(val imageUri: Uri) : MainPageActions
+    data object OnDelete : MainPageActions
+    data class OnMenuDots(val playListModel: PlayListModel) : MainPageActions
+    data object OnMenuDotsDismiss : MainPageActions
+    data class UpdateRenameTextField(val newValue: String) : MainPageActions
+    data object ShowDeleteBottomSheet : MainPageActions
+    data object HideDeleteBottomSheet : MainPageActions
+    data object OnDeletePlaylistBottomSheet : MainPageActions
 }
 
 class MainViewModel(
@@ -100,8 +115,172 @@ class MainViewModel(
             MainPageActions.PlayNext -> playNext()
             MainPageActions.PlayPrevious -> playPrevious()
             MainPageActions.NavigateToAddSongs -> navigateToAddSongs()
-            MainPageActions.ShowBottomSheet -> showBottomSheet()
+            MainPageActions.ShowCreatePlaylistBottomSheet -> showBottomSheet()
             MainPageActions.HideBottomSheet -> hideBottomSheet()
+            is MainPageActions.OnChangeCover -> changeCoverPlaylist(embeddedUri = mainPageActions.imageUri)
+            MainPageActions.OnDelete -> showDeleteBottomSheet()
+            is MainPageActions.OnPlaylist -> playPlaylist(playlistId = mainPageActions.playlistId)
+            MainPageActions.OnRename -> renamePlaylist()
+            is MainPageActions.OnMenuDots -> onMenuDotsClick(playListModel = mainPageActions.playListModel)
+            MainPageActions.OnMenuDotsDismiss -> onMenuDotsDismiss()
+            MainPageActions.HideRenameBottomSheet -> hideRenameBottomSheet()
+            MainPageActions.ShowRenameBottomSheet -> showRenameBottomSheet()
+            is MainPageActions.UpdateRenameTextField -> updateRenameTextField(newValue = mainPageActions.newValue)
+            MainPageActions.HideDeleteBottomSheet -> hideDeleteBottomSheet()
+            MainPageActions.ShowDeleteBottomSheet -> showDeleteBottomSheet()
+            MainPageActions.OnDeletePlaylistBottomSheet -> deletePlaylist()
+        }
+    }
+
+    private fun showDeleteBottomSheet() {
+        _mainPageUiState.update { newState ->
+            newState.copy(
+                showDeleteBottomSheet = true
+            )
+        }
+    }
+
+    private fun hideDeleteBottomSheet() {
+        _mainPageUiState.update { newState ->
+            newState.copy(
+                showDeleteBottomSheet = false
+            )
+        }
+    }
+
+    private fun updateRenameTextField(newValue: String) {
+        _mainPageUiState.update { newState ->
+            newState.copy(
+                renameTextField = newValue
+            )
+        }
+    }
+
+    private fun onMenuDotsClick(playListModel: PlayListModel) {
+        _mainPageUiState.update { newState ->
+            newState.copy(
+                showCurrentPlaylistBottomSheet = true,
+                currentPlaylist = playListModel
+            )
+        }
+    }
+
+
+    private fun onMenuDotsDismiss() {
+        _mainPageUiState.update { newState ->
+            newState.copy(
+                showCurrentPlaylistBottomSheet = false,
+                currentPlaylist = PlayListModel()
+            )
+        }
+    }
+
+    private fun playPlaylist(playlistId: Int) {
+        viewModelScope.launch {
+            _mainPageEvents.send(MainPageEvents.NavigateToPlaylist(playlistId = playlistId))
+        }
+    }
+
+    private fun renamePlaylist() {
+        viewModelScope.launch {
+            val currentPlaylistName = _mainPageUiState.value.currentPlaylist.name
+            val newPlaylistName = _mainPageUiState.value.renameTextField
+            val renameResult = playlistsWithSongsRepository.renamePlaylistName(
+                playlistName = currentPlaylistName,
+                newPlaylistName = newPlaylistName
+            )
+            when (renameResult) {
+                is Result.Error -> {
+                    _mainPageEvents.send(MainPageEvents.ShowToast(message = renameResult.exception))
+                }
+
+                is Result.Success -> {
+                    _mainPageEvents.send(
+                        MainPageEvents.ShowToast(
+                            message = UiText.StringResource(
+                                R.string.successfully_renamed
+                            )
+                        )
+                    )
+                    //close bottom sheet and reset currentPlaylist
+                    onMenuDotsDismiss()
+                    _mainPageUiState.update { newState ->
+                        newState.copy(
+                            renameTextField = "",
+                            showRenameBottomSheet = false,
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    private fun changeCoverPlaylist(embeddedUri: Uri) {
+        viewModelScope.launch {
+            val currentPlaylistName = _mainPageUiState.value.currentPlaylist.name
+            val changeCoverResult = playlistsWithSongsRepository.changeCover(
+                playlistName = currentPlaylistName,
+                embeddedUri = embeddedUri
+            )
+            when (changeCoverResult) {
+                is Result.Error -> {
+                    _mainPageEvents.send(MainPageEvents.ShowToast(message = changeCoverResult.exception))
+                }
+
+                is Result.Success -> {
+                    //close bottom sheet and reset currentPlaylist
+                    onMenuDotsDismiss()
+                    _mainPageEvents.send(
+                        MainPageEvents.ShowToast(
+                            message = UiText.StringResource(
+                                R.string.successfully_changed_cover
+                            )
+                        )
+                    )
+                }
+            }
+        }
+    }
+
+    private fun deletePlaylist() {
+        viewModelScope.launch {
+            val currentPlaylistName = _mainPageUiState.value.currentPlaylist.name
+            val deleteResult =
+                playlistsWithSongsRepository.deletePlaylist(playlistName = currentPlaylistName)
+            when (deleteResult) {
+                is Result.Error -> {
+                    _mainPageEvents.send(MainPageEvents.ShowToast(message = deleteResult.exception))
+                }
+
+                is Result.Success -> {
+                    hideDeleteBottomSheet()
+                    //close bottom sheet and reset currentPlaylist
+                    onMenuDotsDismiss()
+                    _mainPageEvents.send(
+                        MainPageEvents.ShowToast(
+                            message = UiText.StringResource(
+                                R.string.successfully_deleted
+                            )
+                        )
+                    )
+                }
+            }
+        }
+    }
+
+    private fun showRenameBottomSheet() {
+        _mainPageUiState.update { newState ->
+            newState.copy(
+                showRenameBottomSheet = true
+            )
+        }
+    }
+
+    private fun hideRenameBottomSheet() {
+        _mainPageUiState.update { newState ->
+            newState.copy(
+                showRenameBottomSheet = false
+            )
         }
     }
 
@@ -139,8 +318,10 @@ class MainViewModel(
                 }?.let { (playlist, songs) ->
                     PlayListModel(
                         name = playlist.playlistName,
+                        id = playlist.playlistId,
                         total = songs.size,
-                        embeddedArt = songs.firstOrNull()?.embeddedArt
+                        embeddedArt = playlist.embeddedUri ?: songs.firstOrNull()?.embeddedArt,
+                        errorDrawable = R.drawable.favourite_playlist
                     )
                 }
 
@@ -149,8 +330,9 @@ class MainViewModel(
                 }.map { (playlist, songs) ->
                     PlayListModel(
                         name = playlist.playlistName,
+                        id = playlist.playlistId,
                         total = songs.size,
-                        embeddedArt = songs.firstOrNull()?.embeddedArt
+                        embeddedArt = playlist.embeddedUri ?: songs.firstOrNull()?.embeddedArt
                     )
                 }
 
@@ -291,7 +473,7 @@ class MainViewModel(
             _mainPageUiState.update { newState ->
                 newState.copy(
                     playListTextField = "",
-                    isBottomSheetVisible = false
+                    isShowCreatePlaylistBottomSheetVisible = false
                 )
             }
         }
@@ -316,7 +498,7 @@ class MainViewModel(
     private fun showBottomSheet() {
         _mainPageUiState.update { newState ->
             newState.copy(
-                isBottomSheetVisible = true
+                isShowCreatePlaylistBottomSheetVisible = true
             )
         }
     }
@@ -324,7 +506,7 @@ class MainViewModel(
     private fun hideBottomSheet() {
         _mainPageUiState.update { newState ->
             newState.copy(
-                isBottomSheetVisible = false,
+                isShowCreatePlaylistBottomSheetVisible = false,
                 playListTextField = ""
             )
         }

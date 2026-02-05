@@ -1,9 +1,16 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package com.example.vibeplayer.feature.main.presentation
 
 import android.annotation.SuppressLint
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -16,6 +23,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -24,9 +32,12 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -39,21 +50,26 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.vibeplayer.R
 import com.example.vibeplayer.app.domain.NowPlayingData
+import com.example.vibeplayer.core.data.Constants.FAVOURITE
 import com.example.vibeplayer.core.domain.Song
 import com.example.vibeplayer.core.presentation.designsystem.components.VibePlayerAsyncImage
 import com.example.vibeplayer.core.presentation.designsystem.components.VibePlayerBottomSheet
 import com.example.vibeplayer.core.presentation.designsystem.components.VibePlayerIconShape
 import com.example.vibeplayer.core.presentation.designsystem.components.VibePlayerMiniBar
+import com.example.vibeplayer.core.presentation.designsystem.components.VibePlayerOutlinedButton
 import com.example.vibeplayer.core.presentation.designsystem.components.VibePlayerOutlinedButtonWithIcon
 import com.example.vibeplayer.core.presentation.designsystem.components.VibePlayerPlaylistItem
 import com.example.vibeplayer.core.presentation.designsystem.components.VibePlayerPrimaryButton
@@ -70,6 +86,7 @@ import com.example.vibeplayer.core.presentation.designsystem.theme.surfaceBG
 import com.example.vibeplayer.core.presentation.designsystem.theme.surfaceOutline
 import com.example.vibeplayer.core.presentation.designsystem.theme.textPrimary
 import com.example.vibeplayer.core.presentation.designsystem.theme.textSecondary
+import com.example.vibeplayer.core.util.copyImageToInternalStorage
 import com.example.vibeplayer.core.util.toMinutesSeconds
 import kotlinx.coroutines.launch
 
@@ -80,6 +97,25 @@ fun MainPageScreen(
     onActions: (MainPageActions) -> Unit,
     isMinimized: Boolean,
 ) {
+    val context = LocalContext.current
+
+    //google docs:
+    //https://developer.android.com/training/data-storage/shared/photo-picker
+    // Registers a photo picker activity launcher in single-select mode.
+    val pickMedia =
+        rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+            // Callback is invoked after the user selects a media item or closes the
+            // photo picker.
+            uri?.let {
+                val imageStorageUri = copyImageToInternalStorage(
+                    context = context,
+                    uri = it,
+                    fileId = mainPageUiState.currentPlaylist.id
+                )
+                onActions(MainPageActions.OnChangeCover(imageUri = imageStorageUri))
+            } ?: Toast.makeText(context, R.string.change_cover_failed, Toast.LENGTH_LONG).show()
+        }
+
     val scope = rememberCoroutineScope()
     val lazyListState = rememberLazyListState()
 
@@ -90,7 +126,6 @@ fun MainPageScreen(
     }
 
     val snackBarHostState = remember { SnackbarHostState() }
-    val context = LocalContext.current
 
     LaunchedEffect(mainPageUiState.snackbarMessage) {
         if (mainPageUiState.snackbarMessage != null) {
@@ -226,14 +261,14 @@ fun MainPageScreen(
                             onActions(MainPageActions.UpdateMainTabs(mainTabs = mainTabs))
                         },
                         favouritePlayList = mainPageUiState.favouritePlayList,
-                        onMenuDotsClick = {
-
+                        onMenuDotsClick = { playlistModel ->
+                            onActions(MainPageActions.OnMenuDots(playListModel = playlistModel))
                         },
                         myPlatListList = mainPageUiState.myPlayList,
                         onCreatePlayList = {
-                            onActions(MainPageActions.ShowBottomSheet)
+                            onActions(MainPageActions.ShowCreatePlaylistBottomSheet)
                         },
-                        isBottomSheetVisible = mainPageUiState.isBottomSheetVisible,
+                        isBottomSheetVisible = mainPageUiState.isShowCreatePlaylistBottomSheetVisible,
                         isCreateEnabled = mainPageUiState.isCreateEnabled,
                         onCreateClick = {
                             onActions(MainPageActions.NavigateToAddSongs)
@@ -245,13 +280,52 @@ fun MainPageScreen(
                         onPlaylistValueChange = { newValue ->
                             onActions(MainPageActions.UpdatePlaylistTextField(value = newValue))
                         },
+                        currentPlayListModel = mainPageUiState.currentPlaylist,
+                        onDismiss = {
+                            onActions(MainPageActions.OnMenuDotsDismiss)
+                        },
+                        onPlayBottomSheetClick = { playlistId->
+                            onActions(MainPageActions.OnPlaylist(playlistId = playlistId))
+                        },
+                        onRenameClick = {
+                            onActions(MainPageActions.ShowRenameBottomSheet)
+                        },
+                        onChangeCoverClick = {
+                            //mimeType means the type of the selected items from gallery
+                            //should be image only
+//                            val mimeType = "image/*"
+//                            galleryLauncher.launch(mimeType)
+                            pickMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                        },
+                        onDeleteClick = {
+                            onActions(MainPageActions.OnDelete)
+                        },
+                        showCurrentPlaylistBottomSheet = mainPageUiState.showCurrentPlaylistBottomSheet,
+                        showRenameBottomSheet = mainPageUiState.showRenameBottomSheet,
+                        cancelRenameBottomSheet = {
+                            onActions(MainPageActions.HideRenameBottomSheet)
+                        },
+                        renameTextField = mainPageUiState.renameTextField,
+                        isRenameEnabled = mainPageUiState.isRenameEnabled,
+                        onRenamePlaylist = {
+                            onActions(MainPageActions.OnRename)
+                        },
+                        updateRenameTextField = { renameNewValue ->
+                            onActions(MainPageActions.UpdateRenameTextField(newValue = renameNewValue))
+                        },
+                        showDeleteBottomSheet = mainPageUiState.showDeleteBottomSheet,
+                        onCancelDeleteBottomSheet = {
+                            onActions(MainPageActions.HideDeleteBottomSheet)
+                        },
+                        onDeletePlaylistBottomSheet = {
+                            onActions(MainPageActions.OnDeletePlaylistBottomSheet)
+                        }
                     )
                 }
             }
         }
     }
 }
-
 
 @SuppressLint("LocalContextResourcesRead")
 @Composable
@@ -276,6 +350,22 @@ fun TrackListState(
     onCancelClick: () -> Unit,
     playListTextFieldValue: String,
     onPlaylistValueChange: (String) -> Unit,
+    currentPlayListModel: PlayListModel,
+    onDismiss: () -> Unit,
+    onPlayBottomSheetClick: (Int) -> Unit,
+    onRenameClick: () -> Unit,
+    onChangeCoverClick: () -> Unit,
+    onDeleteClick: () -> Unit,
+    showCurrentPlaylistBottomSheet: Boolean,
+    showRenameBottomSheet: Boolean,
+    cancelRenameBottomSheet: () -> Unit,
+    updateRenameTextField: (String) -> Unit,
+    renameTextField: String,
+    isRenameEnabled: Boolean,
+    onRenamePlaylist: () -> Unit,
+    showDeleteBottomSheet: Boolean,
+    onCancelDeleteBottomSheet: () -> Unit,
+    onDeletePlaylistBottomSheet: () -> Unit,
 ) {
     Column(
         modifier = modifier,
@@ -337,6 +427,13 @@ fun TrackListState(
                         onMenuDotsClick = onMenuDotsClick,
                         myPlatListList = myPlatListList,
                         onCreatePlayList = onCreatePlayList,
+                        currentPlayListModel = currentPlayListModel,
+                        onDismiss = onDismiss,
+                        onPlayBottomSheetClick = onPlayBottomSheetClick,
+                        onRenameClick = onRenameClick,
+                        onChangeCoverClick = onChangeCoverClick,
+                        onDeleteClick = onDeleteClick,
+                        showCurrentPlaylistBottomSheet = showCurrentPlaylistBottomSheet
                     )
                     if (isBottomSheetVisible) {
                         VibePlayerBottomSheet(
@@ -345,9 +442,29 @@ fun TrackListState(
                             onValueChange = { newValue ->
                                 onPlaylistValueChange(newValue)
                             },
-                            isCreateEnabled = isCreateEnabled,
+                            isButtonEnabled = isCreateEnabled,
                             onCancelClick = onCancelClick,
-                            onCreateClick = onCreateClick
+                            onButtonClick = onCreateClick
+                        )
+                    }
+                    if (showRenameBottomSheet) {
+                        VibePlayerBottomSheet(
+                            modifier = Modifier,
+                            text = stringResource(R.string.rename_playlist),
+                            buttonText = stringResource(R.string.rename),
+                            value = renameTextField,
+                            onValueChange = { newValue ->
+                                updateRenameTextField(newValue)
+                            },
+                            isButtonEnabled = isRenameEnabled,
+                            onCancelClick = cancelRenameBottomSheet,
+                            onButtonClick = onRenamePlaylist
+                        )
+                    }
+                    if (showDeleteBottomSheet) {
+                        MainScreenDeleteBottomSheet(
+                            onCancel = onCancelDeleteBottomSheet,
+                            onDelete = onDeletePlaylistBottomSheet
                         )
                     }
                 }
@@ -356,6 +473,69 @@ fun TrackListState(
     }
 }
 
+@Composable
+fun MainScreenDeleteBottomSheet(
+    modifier: Modifier = Modifier,
+    onCancel: () -> Unit,
+    onDelete: () -> Unit,
+) {
+    ModalBottomSheet(
+        modifier = modifier
+            .fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        onDismissRequest = onCancel,
+        dragHandle = null
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    color = MaterialTheme.colorScheme.surfaceBG
+                )
+                .blur(12.dp)
+                .shadow(
+                    elevation = 4.dp,
+                    shape = RoundedCornerShape(12.dp),
+                    ambientColor = MaterialTheme.colorScheme.surfaceBG.copy(alpha = 0.3f),
+                    spotColor = MaterialTheme.colorScheme.surfaceBG.copy(alpha = 0.3f)
+                )
+                .padding(horizontal = 16.dp, vertical = 24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = stringResource(R.string.delete_playlist),
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.textPrimary
+                )
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = stringResource(R.string.delete_description),
+                style = MaterialTheme.typography.bodyMediumRegular.copy(
+                    color = MaterialTheme.colorScheme.textSecondary
+                )
+            )
+            Spacer(modifier = Modifier.height(20.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                VibePlayerOutlinedButton(
+                    modifier = Modifier.weight(1f),
+                    text = stringResource(R.string.cancel),
+                    onClick = onCancel
+                )
+                Spacer(modifier = Modifier.width(12.dp))
+                VibePlayerPrimaryButton(
+                    modifier = Modifier.weight(1f),
+                    onclick = onDelete,
+                    text = stringResource(R.string.delete),
+                    isButtonDestructive = true
+                )
+            }
+        }
+    }
+}
 
 @Composable
 fun SongsContent(
@@ -446,6 +626,13 @@ fun PlaylistContent(
     myPlatListList: List<PlayListModel>,
     onMenuDotsClick: (PlayListModel) -> Unit,
     onCreatePlayList: () -> Unit,
+    currentPlayListModel: PlayListModel,
+    onDismiss: () -> Unit,
+    onPlayBottomSheetClick: (Int) -> Unit,
+    onRenameClick: () -> Unit,
+    onChangeCoverClick: () -> Unit,
+    onDeleteClick: () -> Unit,
+    showCurrentPlaylistBottomSheet: Boolean,
 ) {
     val context = LocalContext.current
     Column(
@@ -500,7 +687,14 @@ fun PlaylistContent(
                 myPlatListList = myPlatListList,
                 onMenuDotsClick = { playListModel ->
                     onMenuDotsClick(playListModel)
-                }
+                },
+                currentPlayListModel = currentPlayListModel,
+                onDismiss = onDismiss,
+                onPlayBottomSheetClick = onPlayBottomSheetClick,
+                onRenameClick = onRenameClick,
+                onChangeCoverClick = onChangeCoverClick,
+                onDeleteClick = onDeleteClick,
+                showCurrentPlaylistBottomSheet = showCurrentPlaylistBottomSheet,
             )
         } else {
             Spacer(modifier = Modifier.height(8.dp))
@@ -516,25 +710,159 @@ fun PlaylistContent(
     }
 }
 
+
+@Composable
+fun MainScreenBottomSheet(
+    modifier: Modifier = Modifier,
+    playListModel: PlayListModel,
+    onDismiss: () -> Unit,
+    onPlayBottomSheetClick: (Int) -> Unit,
+    onRenameClick: () -> Unit,
+    onChangeCoverClick: () -> Unit,
+    onDeleteClick: () -> Unit,
+) {
+    ModalBottomSheet(
+        modifier = modifier
+            .fillMaxWidth()
+            .imePadding(),
+        shape = RoundedCornerShape(12.dp),
+        onDismissRequest = onDismiss,
+        containerColor = Color.Transparent,
+        dragHandle = null,
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    color = MaterialTheme.colorScheme.surfaceBG
+                )
+                .blur(12.dp)
+                .shadow(
+                    elevation = 4.dp,
+                    shape = RoundedCornerShape(12.dp),
+                    ambientColor = MaterialTheme.colorScheme.surfaceBG.copy(alpha = 0.3f),
+                    spotColor = MaterialTheme.colorScheme.surfaceBG.copy(alpha = 0.3f)
+                )
+                .padding(horizontal = 16.dp, vertical = 24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(2.dp)
+        ) {
+            VibePlayerPlaylistItem(
+                playListModel = playListModel,
+                showDots = false,
+                enabled = false
+            )
+            HorizontalDivider(
+                modifier = Modifier.fillMaxWidth(),
+                color = MaterialTheme.colorScheme.textSecondary
+            )
+            MainScreenClickableIconAndText(
+                imageVector = VibePlayerIcons.Play,
+                iconDescription = stringResource(R.string.play),
+                text = stringResource(R.string.play),
+                onClick = {
+                    onPlayBottomSheetClick(playListModel.id)
+                }
+            )
+            if (playListModel.name != FAVOURITE) {
+                Column {
+                    MainScreenClickableIconAndText(
+                        imageVector = VibePlayerIcons.Rename,
+                        iconDescription = stringResource(R.string.rename),
+                        text = stringResource(R.string.rename),
+                        onClick = onRenameClick
+                    )
+
+                    MainScreenClickableIconAndText(
+                        imageVector = VibePlayerIcons.ChangeCover,
+                        iconDescription = stringResource(R.string.change_cover),
+                        text = stringResource(R.string.change_cover),
+                        onClick = onChangeCoverClick
+                    )
+
+                    MainScreenClickableIconAndText(
+                        imageVector = VibePlayerIcons.Delete,
+                        iconDescription = stringResource(R.string.delete),
+                        text = stringResource(R.string.delete),
+                        onClick = onDeleteClick
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun MainScreenClickableIconAndText(
+    modifier: Modifier = Modifier,
+    imageVector: ImageVector,
+    iconDescription: String,
+    text: String,
+    onClick: () -> Unit,
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 6.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Start
+    ) {
+        VibePlayerIconShape(
+            imageVector = imageVector,
+            iconDescription = iconDescription,
+            onClick = onClick
+        )
+        Spacer(modifier = Modifier.width(12.dp))
+        Text(
+            text = text,
+            style = MaterialTheme.typography.bodyLargeMedium.copy(
+                color = MaterialTheme.colorScheme.textPrimary,
+                textAlign = TextAlign.Start
+            )
+        )
+    }
+}
+
 @Composable
 fun MyPlaylists(
     modifier: Modifier = Modifier,
     myPlatListList: List<PlayListModel>,
-    onMenuDotsClick: (PlayListModel) -> Unit
+    onMenuDotsClick: (PlayListModel) -> Unit,
+    currentPlayListModel: PlayListModel,
+    onDismiss: () -> Unit,
+    onPlayBottomSheetClick: (Int) -> Unit,
+    onRenameClick: () -> Unit,
+    onChangeCoverClick: () -> Unit,
+    onDeleteClick: () -> Unit,
+    showCurrentPlaylistBottomSheet: Boolean,
 ) {
-    LazyColumn(
-        modifier = modifier.fillMaxWidth()
+    Box(
+        modifier = modifier,
     ) {
-        items(myPlatListList) { playListModel ->
-            VibePlayerPlaylistItem(
-                playListModel = playListModel,
-                onMenuDotsClick = {
-                    onMenuDotsClick(playListModel)
-                }
-            )
-            HorizontalDivider(
-                modifier = Modifier.fillMaxWidth(),
-                color = MaterialTheme.colorScheme.surfaceOutline
+        LazyColumn(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            items(myPlatListList) { playListModel ->
+                VibePlayerPlaylistItem(
+                    playListModel = playListModel,
+                    onMenuDotsClick = {
+                        onMenuDotsClick(playListModel)
+                    }
+                )
+                HorizontalDivider(
+                    modifier = Modifier.fillMaxWidth(),
+                    color = MaterialTheme.colorScheme.surfaceOutline
+                )
+            }
+        }
+        if (showCurrentPlaylistBottomSheet) {
+            MainScreenBottomSheet(
+                playListModel = currentPlayListModel,
+                onDismiss = onDismiss,
+                onPlayBottomSheetClick = onPlayBottomSheetClick,
+                onRenameClick = onRenameClick,
+                onChangeCoverClick = onChangeCoverClick,
+                onDeleteClick = onDeleteClick
             )
         }
     }

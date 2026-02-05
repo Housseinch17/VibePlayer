@@ -43,9 +43,11 @@ fun VibePlayerBottomSheet(
     modifier: Modifier = Modifier,
     value: String,
     onValueChange: (String) -> Unit,
-    isCreateEnabled: Boolean,
+    text: String = stringResource(R.string.create_new_playlist),
+    buttonText: String = stringResource(R.string.create),
+    isButtonEnabled: Boolean,
     onCancelClick: () -> Unit,
-    onCreateClick: () -> Unit,
+    onButtonClick: () -> Unit,
 ) {
     val scope = rememberCoroutineScope()
     val sheetState = rememberModalBottomSheetState()
@@ -78,7 +80,7 @@ fun VibePlayerBottomSheet(
         ) {
             Text(
                 modifier = Modifier,
-                text = stringResource(R.string.create_new_playlist),
+                text = text,
                 style = MaterialTheme.typography.titleMedium.copy(
                     color = MaterialTheme.colorScheme.textPrimary
                 )
@@ -104,9 +106,9 @@ fun VibePlayerBottomSheet(
                 Spacer(modifier = Modifier.width(12.dp))
                 VibePlayerPrimaryButton(
                     modifier = Modifier.weight(1f),
-                    isEnabled = isCreateEnabled,
-                    onclick = onCreateClick,
-                    text = stringResource(R.string.create)
+                    isEnabled = isButtonEnabled,
+                    onclick = onButtonClick,
+                    text = buttonText
                 )
             }
         }

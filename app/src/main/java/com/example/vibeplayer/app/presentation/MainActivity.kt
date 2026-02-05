@@ -20,7 +20,6 @@ import com.example.vibeplayer.app.navigation.NavigationRoot
 import com.example.vibeplayer.app.navigation.NavigationScreens
 import com.example.vibeplayer.core.presentation.designsystem.theme.VibePlayerTheme
 import com.example.vibeplayer.core.presentation.designsystem.theme.surfaceBG
-
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class MainActivity : ComponentActivity() {
@@ -75,4 +74,5 @@ class MainActivity : ComponentActivity() {
     internal fun checkMediaPermission(): Boolean {
         return this.checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED
     }
+
 }

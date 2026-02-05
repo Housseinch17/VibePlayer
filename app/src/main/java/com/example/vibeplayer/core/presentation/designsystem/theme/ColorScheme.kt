@@ -39,3 +39,7 @@ val ColorScheme.surfaceOutline: Color
 val ColorScheme.accent: Color
     @Composable
     get() = Accent
+
+val ColorScheme.buttonDestructive: Color
+    @Composable
+    get() = ButtonDestructive

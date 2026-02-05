@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "fe1b2f7e8b8ec42916545d3cf582a1a9",
+    "identityHash": "cfba6248b0b601247275486fe6db940f",
     "entities": [
       {
         "tableName": "SongEntity",
@@ -70,7 +70,7 @@
       },
       {
         "tableName": "PlaylistEntity",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`playlistId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `playlistName` TEXT NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`playlistId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `playlistName` TEXT NOT NULL, `embeddedUri` TEXT)",
         "fields": [
           {
             "fieldPath": "playlistId",
@@ -83,6 +83,11 @@
             "columnName": "playlistName",
             "affinity": "TEXT",
             "notNull": true
+          },
+          {
+            "fieldPath": "embeddedUri",
+            "columnName": "embeddedUri",
+            "affinity": "TEXT"
           }
         ],
         "primaryKey": {
@@ -120,7 +125,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'fe1b2f7e8b8ec42916545d3cf582a1a9')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'cfba6248b0b601247275486fe6db940f')"
     ]
   }
 }
