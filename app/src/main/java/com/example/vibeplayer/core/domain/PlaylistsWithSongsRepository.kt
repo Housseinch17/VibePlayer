@@ -10,6 +10,10 @@ interface PlaylistsWithSongsRepository {
         selectedSongIds: List<Int>
     ): Result<UiText>
 
+    suspend fun addSongsToExistingPlaylist(
+        playlistName: String,
+        selectedSongIds: List<Int>
+    ): Result<UiText>
     fun getPlaylistsWithSongs(): Flow<List<PlaylistWithSongsDomain>>
 
     suspend fun playlistAlreadyExists(playlistName: String): Boolean
@@ -22,4 +26,5 @@ interface PlaylistsWithSongsRepository {
     suspend fun renamePlaylistName(playlistName: String, newPlaylistName: String): Result<Unit>
     suspend fun deletePlaylist(playlistName: String): Result<Unit>
     suspend fun changeCover(playlistName: String, embeddedUri: Uri): Result<Unit>
+    suspend fun deleteSongFromPlaylistById(playlistId: Int, songDbId: Int): Result<Unit>
 }

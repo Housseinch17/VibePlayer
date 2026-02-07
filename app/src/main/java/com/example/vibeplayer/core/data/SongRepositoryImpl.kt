@@ -105,8 +105,8 @@ class SongRepositoryImpl(
         }
     }
 
-    override suspend fun getSongBySongId(songId: Long): Song {
-        return songDao.getSongBySongId(songId).toSong()
+    override suspend fun getSongById(id: Int): Song {
+        return songDao.getSongById(id = id).toSong()
     }
 
     override suspend fun getSongsByTitleOrArtistName(searchQuery: String): Flow<List<Song>> {
@@ -115,6 +115,16 @@ class SongRepositoryImpl(
         return songDao.getSongsByTitleOrArtistName(searchQuery.trim()).map {
             it.toDomainModel()
         }
+    }
+
+    override suspend fun getSongsExcluding(
+        excludedIds: List<Int>,
+        searchQuery: String
+    ): List<Song> {
+        return if (searchQuery.isBlank()) emptyList() else songDao.getSongsExcluding(
+            excludedIds = excludedIds,
+            searchQuery = searchQuery
+        ).toDomainModel()
     }
 
     private suspend fun fetchSongs(

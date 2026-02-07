@@ -7,13 +7,9 @@ import com.example.vibeplayer.R
 
 object VibePlayerImages {
 
-    val LogoImage: Painter
+    val PlaylistImage: Painter
         @Composable
-        get() = painterResource(R.drawable.logo_img)
-
-    val RadarImage: Painter
-        @Composable
-        get() = painterResource(R.drawable.radar_img)
+        get() = painterResource(R.drawable.playlist_img)
 
     val ScanningRadarImage: Painter
         @Composable

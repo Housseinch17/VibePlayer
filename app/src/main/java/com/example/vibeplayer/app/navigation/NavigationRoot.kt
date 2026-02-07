@@ -7,7 +7,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -25,6 +24,9 @@ import com.example.vibeplayer.core.presentation.ui.ObserveAsEvents
 import com.example.vibeplayer.feature.add_songs.AddSongsEvents
 import com.example.vibeplayer.feature.add_songs.AddSongsScreen
 import com.example.vibeplayer.feature.add_songs.AddSongsViewModel
+import com.example.vibeplayer.feature.edit_playlist_songs.EditPlaylistSongsEvents
+import com.example.vibeplayer.feature.edit_playlist_songs.EditPlaylistSongsScreen
+import com.example.vibeplayer.feature.edit_playlist_songs.EditPlaylistSongsViewModel
 import com.example.vibeplayer.feature.main.presentation.MainPageEvents
 import com.example.vibeplayer.feature.main.presentation.MainPageScreen
 import com.example.vibeplayer.feature.main.presentation.MainViewModel
@@ -35,6 +37,9 @@ import com.example.vibeplayer.feature.now_playing.presentation.NowPlayingViewMod
 import com.example.vibeplayer.feature.permission.presentation.PermissionEvents
 import com.example.vibeplayer.feature.permission.presentation.PermissionScreen
 import com.example.vibeplayer.feature.permission.presentation.PermissionViewModel
+import com.example.vibeplayer.feature.playlist_playback.PlaylistPlaybackEvents
+import com.example.vibeplayer.feature.playlist_playback.PlaylistPlaybackScreen
+import com.example.vibeplayer.feature.playlist_playback.PlaylistPlaybackViewModel
 import com.example.vibeplayer.feature.scan_music.presentation.ScanMusicEvents
 import com.example.vibeplayer.feature.scan_music.presentation.ScanMusicScreen
 import com.example.vibeplayer.feature.scan_music.presentation.ScanMusicViewModel
@@ -82,7 +87,6 @@ fun NavigationRoot(
                 }
 
                 PermissionScreen(
-                    modifier = Modifier.fillMaxSize(),
                     permissionUiState = permissionUiState,
                     onActions = permissionViewModel::onActions
                 )
@@ -107,7 +111,8 @@ fun NavigationRoot(
                         is MainPageEvents.NavigateToAddSongs -> {
                             backStack.add(
                                 NavigationScreens.AddSong(
-                                    events.playlistName
+                                    events.playlistName,
+                                    events.playlistId
                                 )
                             )
                         }
@@ -119,13 +124,23 @@ fun NavigationRoot(
                         ).show()
 
                         is MainPageEvents.NavigateToPlaylist -> {
-
+                            backStack.add(
+                                NavigationScreens.PlaylistPlayback(
+                                    playlistName = events.playlistName
+                                )
+                            )
                         }
+
+                        is MainPageEvents.NavigateToEdit -> backStack.add(
+                            NavigationScreens.EditPlaylistSongs(
+                                playlistName = events.playlistName,
+                                playlistId = events.playlistId
+                            )
+                        )
                     }
                 }
 
                 MainPageScreen(
-                    modifier = Modifier.fillMaxSize(),
                     mainPageUiState = mainUiState,
                     onActions = mainViewModel::onActions,
                     isMinimized = isMinimized
@@ -143,7 +158,6 @@ fun NavigationRoot(
                     }
                 }
                 ScanMusicScreen(
-                    modifier = Modifier.fillMaxSize(),
                     scanMusicUi = scanMusicUi,
                     onActions = scanMusicViewModel::onActions
                 )
@@ -191,7 +205,6 @@ fun NavigationRoot(
                 }
 
                 NowPlayingScreen(
-                    modifier = Modifier.fillMaxSize(),
                     nowPlayingUiState = nowPlayingUiState,
                     nowPlayingActions = nowPlayingViewModel::onActions
                 )
@@ -216,7 +229,6 @@ fun NavigationRoot(
                 }
 
                 SearchScreen(
-                    modifier = Modifier.fillMaxSize(),
                     searchUiState = searchUiState,
                     searchActions = searchViewModel::onActions
                 )
@@ -229,17 +241,78 @@ fun NavigationRoot(
                 }
                 val addSongsUiState by addSongsViewModel.state.collectAsStateWithLifecycle()
 
+                val context = LocalContext.current
+
                 ObserveAsEvents(addSongsViewModel.events) { events ->
                     when (events) {
                         AddSongsEvents.NavigateBack -> backStack.removeLastOrNull()
-
+                        is AddSongsEvents.ShowToast -> Toast.makeText(
+                            context,
+                            events.message.asString(context = context),
+                            Toast.LENGTH_LONG
+                        ).show()
                     }
                 }
 
                 AddSongsScreen(
-                    modifier = Modifier.fillMaxSize(),
                     state = addSongsUiState,
                     onActions = addSongsViewModel::onActions
+                )
+            }
+
+            entry<NavigationScreens.PlaylistPlayback> { key ->
+                //here to use the key in viewmodel we have to pass it in parametersOf
+                val playlistPlaybackViewModel = koinViewModel<PlaylistPlaybackViewModel> {
+                    parametersOf(key)
+                }
+                val playlistPlaybackUiState by playlistPlaybackViewModel.state.collectAsStateWithLifecycle()
+
+                ObserveAsEvents(playlistPlaybackViewModel.events) { events ->
+                    when (events) {
+                        PlaylistPlaybackEvents.NavigateBack -> backStack.removeLastOrNull()
+                        is PlaylistPlaybackEvents.AddSongs -> backStack.add(
+                            NavigationScreens.AddSong(
+                                playlistName = events.playlistName,
+                                playlistId = events.playlistId
+                            )
+                        )
+
+                        is PlaylistPlaybackEvents.NavigateToNowPlaying -> backStack.add(
+                            NavigationScreens.NowPlaying(nowPlayingData = events.nowPlayingData)
+                        )
+                    }
+                }
+
+                PlaylistPlaybackScreen(
+                    state = playlistPlaybackUiState,
+                    onActions = playlistPlaybackViewModel::onActions
+                )
+            }
+
+            entry<NavigationScreens.EditPlaylistSongs> { key ->
+                //here to use the key in viewmodel we have to pass it in parametersOf
+                val editPlaylistSongsViewModel = koinViewModel<EditPlaylistSongsViewModel> {
+                    parametersOf(key)
+                }
+                val editPlaylistUiState by editPlaylistSongsViewModel.state.collectAsStateWithLifecycle()
+
+                val context = LocalContext.current
+
+                ObserveAsEvents(editPlaylistSongsViewModel.events) { events ->
+                    when (events) {
+                        EditPlaylistSongsEvents.NavigateBack -> backStack.removeLastOrNull()
+
+                        is EditPlaylistSongsEvents.ShowToast -> Toast.makeText(
+                            context,
+                            events.message.asString(context = context),
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
+                }
+
+                EditPlaylistSongsScreen(
+                    state = editPlaylistUiState,
+                    onActions = editPlaylistSongsViewModel::onActions
                 )
             }
         }

@@ -68,7 +68,9 @@ fun AddSongsScreen(
 
     val lazyListState = rememberLazyListState()
     Scaffold(
-        modifier = modifier.padding(horizontal = 16.dp),
+        modifier = modifier
+            .fillMaxSize()
+            .padding(horizontal = 16.dp),
         topBar = {
             Box(
                 modifier = Modifier.fillMaxWidth(),
@@ -154,6 +156,14 @@ fun AddSongsScreen(
                     )
                 )
             }
+            if (state.showNoSongsToAdd) {
+                Text(
+                    text = stringResource(R.string.no_songs_to_be_added),
+                    style = MaterialTheme.typography.bodyLarge.copy(
+                        color = MaterialTheme.colorScheme.textSecondary
+                    )
+                )
+            }
             if (!state.isLoading) {
                 LazyColumn(
                     modifier = Modifier.fillMaxWidth(),
@@ -193,6 +203,39 @@ fun AddSongsScreen(
                 )
             }
         }
+    }
+}
+
+@Composable
+fun SongItemWithClearButton(
+    modifier: Modifier = Modifier,
+    song: Song,
+    deleteSongFromPlaylist: () -> Unit,
+) {
+    Column(
+        modifier = modifier.fillMaxWidth(),
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Start
+        ) {
+            SongItem(
+                modifier = Modifier.weight(1f),
+                song = song,
+                enabled = false,
+            )
+            Spacer(modifier = Modifier.width(12.dp))
+            VibePlayerIconShape(
+                imageVector = VibePlayerIcons.Clear,
+                iconDescription = stringResource(R.string.clear),
+                onClick = deleteSongFromPlaylist
+            )
+        }
+        HorizontalDivider(
+            modifier = Modifier.fillMaxWidth(),
+            color = MaterialTheme.colorScheme.textSecondary
+        )
     }
 }
 

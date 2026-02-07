@@ -76,5 +76,12 @@ songs</string>
     <string name="delete_description">Are you sure you want to delete playlist New Playlist?</string>
     <string name="camera_permission_denied">Camera permission denied</string>
     <string name="change_cover_failed">Failed to change cover!</string>
+    <string name="no_songs_found">No songs found</string>
+    <string name="no_songs_to_be_added">There is no songs to be added!</string>
+    <string name="show_existing_songs">Show existing songs</string>
+    <string name="hide_existing_songs">Hide existing songs</string>
+    <string name="existing_songs">Existing songs</string>
+    <string name="song_deleted">Song deleted</string>
+    <string name="edit_songs">Edit Songs</string>
 
 </resources>

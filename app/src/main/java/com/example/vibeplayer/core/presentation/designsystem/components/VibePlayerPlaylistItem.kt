@@ -40,6 +40,7 @@ fun VibePlayerPlaylistItem(
     onMenuDotsClick: (PlayListModel) -> Unit = {},
     onPlaylistClick: ((String) -> Unit)? = null,
     enabled: Boolean = false,
+    isFavourite: Boolean = false
 ) {
     val context = LocalContext.current
     Row(
@@ -60,7 +61,7 @@ fun VibePlayerPlaylistItem(
             modifier = Modifier
                 .size(64.dp)
                 .clip(CircleShape),
-            imageUrl = playListModel.embeddedArt,
+            imageUrl = if(isFavourite) R.drawable.favourite_playlist else playListModel.embeddedArt,
             contentDescription = stringResource(R.string.playlist_image),
             errorDrawable = playListModel.errorDrawable,
         )

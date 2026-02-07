@@ -52,7 +52,7 @@ fun ScanMusicScreen(
     }
 
     Scaffold(
-        modifier = modifier.padding(horizontal = 16.dp),
+        modifier = modifier.fillMaxSize().padding(horizontal = 16.dp),
         topBar = {
             Box(
                 modifier = Modifier.fillMaxWidth(),

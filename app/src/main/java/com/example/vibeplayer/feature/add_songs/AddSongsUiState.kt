@@ -6,6 +6,7 @@ import com.example.vibeplayer.core.presentation.ui.UiText
 
 data class AddSongsUiState(
     val playlistName: String = "",
+    val playlistId: Int = 0,
     val isLoading: Boolean = false,
     val songsList: List<Song> = emptyList(),
     val searchValue: String = "",
@@ -21,4 +22,5 @@ data class AddSongsUiState(
     }
     val selectedAll: Boolean = selectedIds.size == songsList.size && songsList.isNotEmpty()
     val canSaveToDb: Boolean = selectedIds.isNotEmpty() && !isSaving
+    val showNoSongsToAdd: Boolean = songsList.isEmpty()
 }

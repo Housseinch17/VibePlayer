@@ -36,11 +36,15 @@ interface SongDao {
     @Query("Select * From SongEntity where audioUri = :uri limit 1")
     suspend fun getSongByUri(uri: Uri?): SongEntity?
 
-    @Query("Select * From SongEntity where songId = :songId limit 1")
-    suspend fun getSongBySongId(songId: Long): SongEntity
-
     @Query("Select * From SongEntity where id = :id limit 1")
     suspend fun getSongById(id: Int): SongEntity
+
+    @Query(
+        "SELECT * FROM SongEntity WHERE songId NOT IN (:excludedIds)" +
+                " AND (title LIKE '%' || :searchQuery || '%'\n" +
+                "       OR artist LIKE '%' || :searchQuery || '%')"
+    )
+    suspend fun getSongsExcluding(excludedIds: List<Int>, searchQuery: String): List<SongEntity>
 
     @Upsert
     suspend fun upsertAll(songs: List<SongEntity>)

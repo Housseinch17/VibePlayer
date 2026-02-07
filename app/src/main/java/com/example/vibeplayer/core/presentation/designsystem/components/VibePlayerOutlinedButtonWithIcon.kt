@@ -3,7 +3,6 @@ package com.example.vibeplayer.core.presentation.designsystem.components
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.ButtonColors
@@ -43,7 +42,7 @@ fun VibePlayerOutlinedButtonWithIcon(
        colors = buttonColors
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier,
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {

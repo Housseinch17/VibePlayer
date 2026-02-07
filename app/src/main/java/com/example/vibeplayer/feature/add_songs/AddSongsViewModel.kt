@@ -15,10 +15,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
@@ -28,6 +25,7 @@ import kotlin.time.Duration.Companion.seconds
 
 sealed interface AddSongsEvents {
     data object NavigateBack : AddSongsEvents
+    data class ShowToast(val message: UiText) : AddSongsEvents
 }
 
 sealed interface AddSongsActions {
@@ -48,7 +46,9 @@ class AddSongsViewModel(
 ) : ViewModel() {
     private val _state = MutableStateFlow(AddSongsUiState())
     val state = _state.onStart {
-        setPlaylistName()
+        //both functions are suspend because setSongs() should wait setPlaylistNameAndId() to finish
+        //before executing so setPlaylistName isn't launched in any new scope/thread
+        setPlaylistNameAndId()
         setSongs()
     }.stateIn(
         viewModelScope,
@@ -82,22 +82,46 @@ class AddSongsViewModel(
         }
     }
 
-    private fun setPlaylistName() {
+    private fun setPlaylistNameAndId() {
         val playlistName = navKey.playlistName
+        val playlistId = navKey.playlistId
         _state.update { newState ->
             newState.copy(
-                playlistName = playlistName
+                playlistName = playlistName,
+                playlistId = playlistId
             )
         }
     }
 
     private fun setSongs() {
         viewModelScope.launch {
-            songRepository.getSongs().collect { songs ->
-                _state.update { newState ->
-                    newState.copy(
-                        songsList = songs
-                    )
+            val playlistName = _state.value.playlistName
+            val playlistAlreadyExists =
+                playlistsWithSongsRepository.playlistAlreadyExists(playlistName = playlistName)
+            if (playlistAlreadyExists) {
+                combine(
+                    flow = playlistsWithSongsRepository.getPlaylistByName(playlistName = playlistName),
+                    flow2 = songRepository.getSongs()
+                ) { domain, songs ->
+                    val playlistExistingSongsId = domain.songs.map { it.id }
+                    val remainingSongs = songs.filter {
+                        it.id !in playlistExistingSongsId
+                    }
+                    remainingSongs
+                }.collect { remainingSongs ->
+                    _state.update { newState ->
+                        newState.copy(
+                            songsList = remainingSongs,
+                        )
+                    }
+                }
+            } else {
+                songRepository.getSongs().collect { songs->
+                    _state.update { newState->
+                        newState.copy(
+                            songsList = songs
+                        )
+                    }
                 }
             }
         }
@@ -112,12 +136,18 @@ class AddSongsViewModel(
             }
             val playlistName = _state.value.playlistName
             val selectedSongsId = _state.value.selectedIds
-            val savePlayList = playlistsWithSongsRepository.createPlaylistWithSongs(
-                playlistName = playlistName,
-                selectedSongIds = selectedSongsId
-            )
-            when (savePlayList) {
-                is Result.Error -> showSnackbarMessage(savePlayList.exception)
+            val playlistAlreadyExist =
+                playlistsWithSongsRepository.playlistAlreadyExists(playlistName = playlistName)
+            val saveOrUpdatePlaylist =
+                if (playlistAlreadyExist) playlistsWithSongsRepository.addSongsToExistingPlaylist(
+                    playlistName = playlistName,
+                    selectedSongIds = selectedSongsId
+                ) else playlistsWithSongsRepository.createPlaylistWithSongs(
+                    playlistName = playlistName,
+                    selectedSongIds = selectedSongsId
+                )
+            when (saveOrUpdatePlaylist) {
+                is Result.Error -> showSnackbarMessage(saveOrUpdatePlaylist.exception)
                 is Result.Success -> {
                     showSnackbarMessage(
                         UiText.StringResource(
@@ -155,12 +185,9 @@ class AddSongsViewModel(
                         isLoading = true
                     )
                 }
-                val filteredSong = _state.map {
-                    it.searchValue
-                }.debounce(300)
-                    .flatMapLatest { query ->
-                        songRepository.getSongsByTitleOrArtistName(searchQuery = query)
-                    }.first()
+                val filteredSong = _state.value.songsList.filter {
+                    it.artist.contains(searchValue, true) || it.title.contains(searchValue, true)
+                }
                 _state.update { newState ->
                     newState.copy(
                         filteredSongs = filteredSong,

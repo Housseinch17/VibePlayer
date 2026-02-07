@@ -73,6 +73,7 @@ import com.example.vibeplayer.core.presentation.designsystem.components.VibePlay
 import com.example.vibeplayer.core.presentation.designsystem.components.VibePlayerOutlinedButtonWithIcon
 import com.example.vibeplayer.core.presentation.designsystem.components.VibePlayerPlaylistItem
 import com.example.vibeplayer.core.presentation.designsystem.components.VibePlayerPrimaryButton
+import com.example.vibeplayer.core.presentation.designsystem.components.VibePlayerShuffleAndPlay
 import com.example.vibeplayer.core.presentation.designsystem.components.VibePlayerSnackbar
 import com.example.vibeplayer.core.presentation.designsystem.components.rotationIfScanning
 import com.example.vibeplayer.core.presentation.designsystem.theme.TextPrimary
@@ -137,7 +138,7 @@ fun MainPageScreen(
     }
 
     Scaffold(
-        modifier = modifier,
+        modifier = modifier.fillMaxSize(),
         containerColor = MaterialTheme.colorScheme.surfaceBG,
         topBar = {
             MainPageTopBar(
@@ -185,11 +186,11 @@ fun MainPageScreen(
                         onActions(MainPageActions.PlayPrevious)
                     },
                     progressIndicator = mainPageUiState.progressIndicatorForLinearProgress,
-                    onClick = { songId ->
+                    onClick = { id ->
                         onActions(
                             MainPageActions.NavigateToNowPlaying(
                                 nowPlayingData = NowPlayingData.PlayBySongId(
-                                    songId = songId
+                                    id = id
                                 )
                             )
                         )
@@ -242,11 +243,11 @@ fun MainPageScreen(
                         songList = mainPageUiState.songState.songList,
                         totalSongs = mainPageUiState.totalSong,
                         totalPlaylist = mainPageUiState.myPlayList.size + 1,
-                        onSongItemClick = { songId ->
+                        onSongItemClick = { id ->
                             onActions(
                                 MainPageActions.NavigateToNowPlaying(
                                     nowPlayingData = NowPlayingData.PlayBySongId(
-                                        songId = songId
+                                        id = id
                                     )
                                 )
                             )
@@ -284,8 +285,16 @@ fun MainPageScreen(
                         onDismiss = {
                             onActions(MainPageActions.OnMenuDotsDismiss)
                         },
-                        onPlayBottomSheetClick = { playlistId->
-                            onActions(MainPageActions.OnPlaylist(playlistId = playlistId))
+                        onPlayBottomSheetClick = { playlistName ->
+                            onActions(MainPageActions.OnPlaylist(playlistName = playlistName))
+                        },
+                        onEditClick = { playlistId, playlistName ->
+                            onActions(
+                                MainPageActions.NavigateToEdit(
+                                    playlistId = playlistId,
+                                    playlistName = playlistName
+                                )
+                            )
                         },
                         onRenameClick = {
                             onActions(MainPageActions.ShowRenameBottomSheet)
@@ -333,7 +342,7 @@ fun TrackListState(
     modifier: Modifier = Modifier,
     selectedMainTabs: MainTabs,
     state: LazyListState,
-    onSongItemClick: (Long) -> Unit,
+    onSongItemClick: (Int) -> Unit,
     songList: List<Song>,
     totalSongs: Int,
     totalPlaylist: Int,
@@ -352,7 +361,8 @@ fun TrackListState(
     onPlaylistValueChange: (String) -> Unit,
     currentPlayListModel: PlayListModel,
     onDismiss: () -> Unit,
-    onPlayBottomSheetClick: (Int) -> Unit,
+    onPlayBottomSheetClick: (String) -> Unit,
+    onEditClick: (playlistId: Int, playlistName: String) -> Unit,
     onRenameClick: () -> Unit,
     onChangeCoverClick: () -> Unit,
     onDeleteClick: () -> Unit,
@@ -430,6 +440,7 @@ fun TrackListState(
                         currentPlayListModel = currentPlayListModel,
                         onDismiss = onDismiss,
                         onPlayBottomSheetClick = onPlayBottomSheetClick,
+                        onEditClick = onEditClick,
                         onRenameClick = onRenameClick,
                         onChangeCoverClick = onChangeCoverClick,
                         onDeleteClick = onDeleteClick,
@@ -541,7 +552,7 @@ fun MainScreenDeleteBottomSheet(
 fun SongsContent(
     modifier: Modifier = Modifier,
     state: LazyListState,
-    onSongItemClick: (Long) -> Unit,
+    onSongItemClick: (Int) -> Unit,
     songList: List<Song>,
     totalSongs: Int,
     onShuffleClick: () -> Unit,
@@ -555,35 +566,10 @@ fun SongsContent(
         contentPadding = PaddingValues(vertical = 16.dp)
     ) {
         item {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                VibePlayerOutlinedButtonWithIcon(
-                    modifier = Modifier.weight(1f),
-                    buttonContentIconDescription = stringResource(R.string.shuffle),
-                    buttonContentIconImageVector = VibePlayerIcons.Shuffle,
-                    buttonContentText = stringResource(R.string.shuffle),
-                    borderStroke = BorderStroke(
-                        1.dp,
-                        MaterialTheme.colorScheme.surfaceOutline
-                    ),
-                    onClick = onShuffleClick
-                )
-
-                VibePlayerOutlinedButtonWithIcon(
-                    modifier = Modifier.weight(1f),
-                    buttonContentIconDescription = stringResource(R.string.play),
-                    buttonContentIconImageVector = VibePlayerIcons.Play,
-                    buttonContentText = stringResource(R.string.play),
-                    borderStroke = BorderStroke(
-                        1.dp,
-                        MaterialTheme.colorScheme.surfaceOutline
-                    ),
-                    onClick = onPlayClick,
-                )
-            }
+            VibePlayerShuffleAndPlay(
+                onShuffleClick = onShuffleClick,
+                onPlayClick = onPlayClick
+            )
             Text(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -605,7 +591,7 @@ fun SongsContent(
                 modifier = Modifier,
                 song = song,
                 onSongItemClick = {
-                    onSongItemClick(song.songId)
+                    onSongItemClick(song.id)
                 }
             )
             HorizontalDivider(
@@ -628,7 +614,8 @@ fun PlaylistContent(
     onCreatePlayList: () -> Unit,
     currentPlayListModel: PlayListModel,
     onDismiss: () -> Unit,
-    onPlayBottomSheetClick: (Int) -> Unit,
+    onPlayBottomSheetClick: (String) -> Unit,
+    onEditClick: (playlistId: Int, playlistName: String) -> Unit,
     onRenameClick: () -> Unit,
     onChangeCoverClick: () -> Unit,
     onDeleteClick: () -> Unit,
@@ -672,7 +659,8 @@ fun PlaylistContent(
         }
         VibePlayerPlaylistItem(
             playListModel = favouritePlayList,
-            onMenuDotsClick = { onMenuDotsClick(favouritePlayList) }
+            onMenuDotsClick = { onMenuDotsClick(favouritePlayList) },
+            isFavourite = true
         )
         Text(
             modifier = Modifier,
@@ -691,6 +679,7 @@ fun PlaylistContent(
                 currentPlayListModel = currentPlayListModel,
                 onDismiss = onDismiss,
                 onPlayBottomSheetClick = onPlayBottomSheetClick,
+                onEditClick = onEditClick,
                 onRenameClick = onRenameClick,
                 onChangeCoverClick = onChangeCoverClick,
                 onDeleteClick = onDeleteClick,
@@ -716,7 +705,8 @@ fun MainScreenBottomSheet(
     modifier: Modifier = Modifier,
     playListModel: PlayListModel,
     onDismiss: () -> Unit,
-    onPlayBottomSheetClick: (Int) -> Unit,
+    onPlayBottomSheetClick: (String) -> Unit,
+    onEditClick: (playlistId: Int, playlistName: String) -> Unit,
     onRenameClick: () -> Unit,
     onChangeCoverClick: () -> Unit,
     onDeleteClick: () -> Unit,
@@ -750,7 +740,8 @@ fun MainScreenBottomSheet(
             VibePlayerPlaylistItem(
                 playListModel = playListModel,
                 showDots = false,
-                enabled = false
+                enabled = false,
+                isFavourite = playListModel.name == FAVOURITE
             )
             HorizontalDivider(
                 modifier = Modifier.fillMaxWidth(),
@@ -761,7 +752,15 @@ fun MainScreenBottomSheet(
                 iconDescription = stringResource(R.string.play),
                 text = stringResource(R.string.play),
                 onClick = {
-                    onPlayBottomSheetClick(playListModel.id)
+                    onPlayBottomSheetClick(playListModel.name)
+                }
+            )
+            MainScreenClickableIconAndText(
+                imageVector = VibePlayerIcons.Edit,
+                iconDescription = stringResource(R.string.edit_songs),
+                text = stringResource(R.string.edit_songs),
+                onClick = {
+                    onEditClick(playListModel.id, playListModel.name)
                 }
             )
             if (playListModel.name != FAVOURITE) {
@@ -830,7 +829,8 @@ fun MyPlaylists(
     onMenuDotsClick: (PlayListModel) -> Unit,
     currentPlayListModel: PlayListModel,
     onDismiss: () -> Unit,
-    onPlayBottomSheetClick: (Int) -> Unit,
+    onPlayBottomSheetClick: (String) -> Unit,
+    onEditClick: (playlistId: Int, playlistName: String) -> Unit,
     onRenameClick: () -> Unit,
     onChangeCoverClick: () -> Unit,
     onDeleteClick: () -> Unit,
@@ -860,6 +860,7 @@ fun MyPlaylists(
                 playListModel = currentPlayListModel,
                 onDismiss = onDismiss,
                 onPlayBottomSheetClick = onPlayBottomSheetClick,
+                onEditClick = onEditClick,
                 onRenameClick = onRenameClick,
                 onChangeCoverClick = onChangeCoverClick,
                 onDeleteClick = onDeleteClick

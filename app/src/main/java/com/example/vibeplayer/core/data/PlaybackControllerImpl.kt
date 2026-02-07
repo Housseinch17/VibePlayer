@@ -53,7 +53,6 @@ class PlaybackControllerImpl(
             }
         }
 
-
         override fun onIsPlayingChanged(isPlaying: Boolean) {
             super.onIsPlayingChanged(isPlaying)
             _mediaPlayerState.update { newState ->

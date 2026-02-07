@@ -59,7 +59,8 @@ class PlaylistsWithSongsRepositoryImpl(
                 ).toInt()
 
                 selectedSongIds.forEach { songRoomId ->
-                    playlistsAndSongsDao.upsertPlaylistSongCrossRef(
+                    //playlistsAndSongsDao.upsertPlaylistSongCrossRef
+                    playlistsAndSongsDao.addSongToPlaylist(
                         crossRef = PlaylistsAndSongsEntity(
                             playlistId = playlistId,
                             id = songRoomId
@@ -68,6 +69,27 @@ class PlaylistsWithSongsRepositoryImpl(
                 }
                 Result.Success(UiText.StringResource(R.string.playlist_successfully_saved))
             }
+        }
+    }
+
+    override suspend fun addSongsToExistingPlaylist(
+        playlistName: String,
+        selectedSongIds: List<Int>
+    ): Result<UiText> {
+        return try {
+            val playlistId = getPlaylistIdByName(name = playlistName)
+            selectedSongIds.forEach { songRoomId ->
+                playlistsAndSongsDao.addSongToPlaylist(
+                    crossRef = PlaylistsAndSongsEntity(
+                        playlistId = playlistId,
+                        id = songRoomId
+                    )
+                )
+            }
+            Result.Success(UiText.StringResource(R.string.songs_added_to_playlist))
+        } catch (e: Exception) {
+            if (e is CancellationException) throw e
+            Result.Error(UiText.DynamicString(e.localizedMessage ?: ""))
         }
     }
 
@@ -172,6 +194,21 @@ class PlaylistsWithSongsRepositoryImpl(
         }
     }
 
+    override suspend fun deleteSongFromPlaylistById(playlistId: Int, songDbId: Int): Result<Unit> {
+        return try {
+            playlistsAndSongsDao.deleteSongFromPlaylist(
+                playlistId = playlistId,
+                songDbId = songDbId
+            )
+            Result.Success(Unit)
+        } catch (e: Exception) {
+            if (e is CancellationException) {
+                throw e
+            }
+            Result.Error(exception = UiText.DynamicString(e.localizedMessage ?: ""))
+        }
+    }
+
     override suspend fun changeCover(playlistName: String, embeddedUri: Uri): Result<Unit> {
         val playlistId = getPlaylistIdByName(name = playlistName)
         val oldEntity = playlistDao.getPlaylistByName(playlistName)
@@ -182,17 +219,15 @@ class PlaylistsWithSongsRepositoryImpl(
             playlistName = playlistName,
             embeddedUri = embeddedUri
         )
+        return try {
             //change cover image to new one
             playlistDao.changeCover(playlistEntity = newPlaylistEntity)
-            return try {
-                Result.Success(Unit)
-            } catch (e: Exception) {
-                // Rollback DB
-                playlistDao.changeCover(oldEntity!!)
-                if (e is CancellationException) {
-                    throw e
-                }
-                Result.Error(UiText.DynamicString(e.localizedMessage ?: ""))
+            Result.Success(Unit)
+        } catch (e: Exception) {
+            if (e is CancellationException) {
+                throw e
+            }
+            Result.Error(UiText.DynamicString(e.localizedMessage ?: ""))
         }
     }
 

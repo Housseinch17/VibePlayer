@@ -37,7 +37,7 @@ fun SearchScreen(
     searchActions: (SearchActions) -> Unit,
 ) {
     Box(
-        modifier = modifier.padding(horizontal = 16.dp),
+        modifier = modifier.fillMaxSize().padding(horizontal = 16.dp),
         contentAlignment = Alignment.TopStart
     ) {
         Column(
@@ -121,7 +121,7 @@ fun SearchTopContent(
 fun SearchList(
     modifier: Modifier = Modifier,
     songList: List<Song>,
-    onSongItemClick: (Long) -> Unit,
+    onSongItemClick: (Int) -> Unit,
 ) {
     if (songList.isEmpty()) {
         Text(
@@ -145,7 +145,7 @@ fun SearchList(
                     modifier = Modifier,
                     song = song,
                     onSongItemClick = {
-                        onSongItemClick(song.songId)
+                        onSongItemClick(song.id)
                     }
                 )
                 HorizontalDivider(

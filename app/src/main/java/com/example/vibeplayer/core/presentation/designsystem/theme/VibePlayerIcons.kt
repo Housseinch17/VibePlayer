@@ -115,6 +115,10 @@ object VibePlayerIcons {
         @Composable
         get() = ImageVector.vectorResource(R.drawable.rename)
 
+    val Edit: ImageVector
+        @Composable
+        get() = ImageVector.vectorResource(R.drawable.edit)
+
     val ChangeCover: ImageVector
         @Composable
         get() = ImageVector.vectorResource(R.drawable.change_cover)

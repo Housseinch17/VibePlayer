@@ -28,9 +28,10 @@ sealed interface MainPageEvents {
     data object NavigateToScanMusic : MainPageEvents
     data class NavigateToNowPlaying(val nowPlayingData: NowPlayingData) : MainPageEvents
     data object NavigateToSearch : MainPageEvents
-    data class NavigateToAddSongs(val playlistName: String) : MainPageEvents
+    data class NavigateToAddSongs(val playlistName: String, val playlistId: Int) : MainPageEvents
     data class ShowToast(val message: UiText) : MainPageEvents
-    data class NavigateToPlaylist(val playlistId: Int): MainPageEvents
+    data class NavigateToPlaylist(val playlistName: String) : MainPageEvents
+    data class NavigateToEdit(val playlistName: String, val playlistId: Int) : MainPageEvents
 }
 
 sealed interface MainPageActions {
@@ -50,7 +51,7 @@ sealed interface MainPageActions {
     data object ShowCreatePlaylistBottomSheet : MainPageActions
     data object HideBottomSheet : MainPageActions
     data class UpdatePlaylistTextField(val value: String) : MainPageActions
-    data class OnPlaylist(val playlistId: Int) : MainPageActions
+    data class OnPlaylist(val playlistName: String) : MainPageActions
     data object ShowRenameBottomSheet : MainPageActions
     data object HideRenameBottomSheet : MainPageActions
     data object OnRename : MainPageActions
@@ -62,6 +63,7 @@ sealed interface MainPageActions {
     data object ShowDeleteBottomSheet : MainPageActions
     data object HideDeleteBottomSheet : MainPageActions
     data object OnDeletePlaylistBottomSheet : MainPageActions
+    data class NavigateToEdit(val playlistName: String, val playlistId: Int) : MainPageActions
 }
 
 class MainViewModel(
@@ -119,7 +121,7 @@ class MainViewModel(
             MainPageActions.HideBottomSheet -> hideBottomSheet()
             is MainPageActions.OnChangeCover -> changeCoverPlaylist(embeddedUri = mainPageActions.imageUri)
             MainPageActions.OnDelete -> showDeleteBottomSheet()
-            is MainPageActions.OnPlaylist -> playPlaylist(playlistId = mainPageActions.playlistId)
+            is MainPageActions.OnPlaylist -> playPlaylist(playlistName = mainPageActions.playlistName)
             MainPageActions.OnRename -> renamePlaylist()
             is MainPageActions.OnMenuDots -> onMenuDotsClick(playListModel = mainPageActions.playListModel)
             MainPageActions.OnMenuDotsDismiss -> onMenuDotsDismiss()
@@ -129,6 +131,10 @@ class MainViewModel(
             MainPageActions.HideDeleteBottomSheet -> hideDeleteBottomSheet()
             MainPageActions.ShowDeleteBottomSheet -> showDeleteBottomSheet()
             MainPageActions.OnDeletePlaylistBottomSheet -> deletePlaylist()
+            is MainPageActions.NavigateToEdit -> navigateToEdit(
+                playlistId = mainPageActions.playlistId,
+                playlistName = mainPageActions.playlistName
+            )
         }
     }
 
@@ -157,11 +163,13 @@ class MainViewModel(
     }
 
     private fun onMenuDotsClick(playListModel: PlayListModel) {
-        _mainPageUiState.update { newState ->
-            newState.copy(
-                showCurrentPlaylistBottomSheet = true,
-                currentPlaylist = playListModel
-            )
+        viewModelScope.launch {
+            _mainPageUiState.update { newState ->
+                newState.copy(
+                    showCurrentPlaylistBottomSheet = true,
+                    currentPlaylist = playListModel
+                )
+            }
         }
     }
 
@@ -175,9 +183,11 @@ class MainViewModel(
         }
     }
 
-    private fun playPlaylist(playlistId: Int) {
+    private fun playPlaylist(playlistName: String) {
         viewModelScope.launch {
-            _mainPageEvents.send(MainPageEvents.NavigateToPlaylist(playlistId = playlistId))
+            //close bottom sheet
+            onMenuDotsDismiss()
+            _mainPageEvents.send(MainPageEvents.NavigateToPlaylist(playlistName = playlistName))
         }
     }
 
@@ -335,12 +345,22 @@ class MainViewModel(
                         embeddedArt = playlist.embeddedUri ?: songs.firstOrNull()?.embeddedArt
                     )
                 }
-
+                val currentPlaylistModel = _mainPageUiState.value.currentPlaylist
+                val updatedCurrentPlaylistModel = if (currentPlaylistModel != PlayListModel()) {
+                    val filterForCurrentPlaylist = playlistsWithSongs.first {
+                        it.playlist.playlistName == currentPlaylistModel.name
+                    }
+                    val updatedCurrentPlaylistModel = currentPlaylistModel.copy(
+                        total = filterForCurrentPlaylist.songs.size,
+                        embeddedArt = filterForCurrentPlaylist.playlist.embeddedUri
+                    )
+                    updatedCurrentPlaylistModel
+                } else currentPlaylistModel
                 _mainPageUiState.update { newState ->
                     newState.copy(
                         favouritePlayList = favourite ?: PlayListModel(),
-                        myPlayList = myPlaylists
-
+                        myPlayList = myPlaylists,
+                        currentPlaylist = updatedCurrentPlaylistModel
                     )
                 }
             }
@@ -456,9 +476,23 @@ class MainViewModel(
         }
     }
 
+    private fun navigateToEdit(playlistName: String, playlistId: Int) {
+        viewModelScope.launch {
+            //close bottom sheet
+            onMenuDotsDismiss()
+            _mainPageEvents.send(
+                MainPageEvents.NavigateToEdit(
+                    playlistName = playlistName,
+                    playlistId = playlistId
+                )
+            )
+        }
+    }
+
     private fun navigateToAddSongs() {
         viewModelScope.launch {
             val playlistName = _mainPageUiState.value.playListTextField
+            val playlistId = _mainPageUiState.value.currentPlaylist.id
             val playlistAlreadyExists =
                 playlistsWithSongsRepository.playlistAlreadyExists(playlistName = playlistName)
             when (playlistAlreadyExists) {
@@ -467,7 +501,12 @@ class MainViewModel(
                 }
 
                 else -> {
-                    _mainPageEvents.send(MainPageEvents.NavigateToAddSongs(playlistName = playlistName))
+                    _mainPageEvents.send(
+                        MainPageEvents.NavigateToAddSongs(
+                            playlistName = playlistName,
+                            playlistId = playlistId
+                        )
+                    )
                 }
             }
             _mainPageUiState.update { newState ->

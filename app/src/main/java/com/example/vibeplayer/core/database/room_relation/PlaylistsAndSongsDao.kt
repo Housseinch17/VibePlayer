@@ -13,6 +13,10 @@ interface PlaylistsAndSongsDao {
     @Upsert
     suspend fun upsertPlaylistSongCrossRef(crossRef: PlaylistsAndSongsEntity)
 
+    //prevents duplicates
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun addSongToPlaylist(crossRef: PlaylistsAndSongsEntity)
+
     @Transaction
     @Query("SELECT * FROM playlistentity")
     fun getPlaylistsWithSongs(): Flow<List<PlaylistWithSongs>>
@@ -28,10 +32,6 @@ interface PlaylistsAndSongsDao {
 
     @Query("DELETE FROM PlaylistEntity WHERE playlistName = :playlistName")
     suspend fun deletePlaylistByName(playlistName: String)
-
-    //prevents duplicates
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun addSongToPlaylist(crossRef: PlaylistsAndSongsEntity)
 
     @Query("DELETE FROM playlistsandsongsentity WHERE playlistId = :playlistId AND id = :songDbId")
     suspend fun deleteSongFromPlaylist(playlistId: Int, songDbId: Int)

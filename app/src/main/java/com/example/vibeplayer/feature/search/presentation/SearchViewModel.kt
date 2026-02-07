@@ -30,7 +30,7 @@ sealed interface SearchActions {
     data class UpdateSearchQuery(val searchQuery: String) : SearchActions
     data object Clear : SearchActions
     data object Cancel : SearchActions
-    data class PlaySong(val songId: Long) : SearchActions
+    data class PlaySong(val id: Int) : SearchActions
 }
 
 class SearchViewModel(
@@ -50,7 +50,7 @@ class SearchViewModel(
 
     fun onActions(searchActions: SearchActions) {
         when (searchActions) {
-            is SearchActions.PlaySong -> playSong(songId = searchActions.songId)
+            is SearchActions.PlaySong -> playSong(id = searchActions.id)
             is SearchActions.UpdateSearchQuery -> updateSearchQuery(searchActions.searchQuery)
             SearchActions.Clear -> clear()
             SearchActions.Cancel -> cancel()
@@ -101,12 +101,12 @@ class SearchViewModel(
         }
     }
 
-    private fun playSong(songId: Long) {
+    private fun playSong(id: Int) {
         viewModelScope.launch {
             _searchEvents.send(
                 SearchEvents.NavigateToNowPlaying(
                     nowPlayingData = NowPlayingData.PlayBySongId(
-                        songId
+                        id
                     )
                 )
             )

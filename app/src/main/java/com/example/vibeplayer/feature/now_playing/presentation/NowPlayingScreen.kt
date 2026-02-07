@@ -78,7 +78,7 @@ fun NowPlayingScreen(
         nowPlayingActions(NowPlayingActions.Minimize)
     }
     Scaffold(
-        modifier = modifier
+        modifier = modifier.fillMaxSize()
             .padding(horizontal = 16.dp),
         topBar = {
             Row(

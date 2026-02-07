@@ -13,10 +13,10 @@ import com.example.vibeplayer.core.domain.Song
 import com.example.vibeplayer.core.domain.SongRepository
 import com.example.vibeplayer.core.presentation.ui.UiText
 import com.example.vibeplayer.feature.main.presentation.PlayListModel
-import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
@@ -268,13 +268,20 @@ class NowPlayingViewModel(
             }
             when (result) {
                 is Result.Error -> _nowPlayingEvents.send(NowPlayingEvents.ShowToast(message = result.exception))
-                is Result.Success -> _nowPlayingEvents.send(
-                    NowPlayingEvents.ShowToast(
-                        message = UiText.StringResource(
-                            R.string.favourite_playlist_updated
+                is Result.Success -> {
+                    _nowPlayingUiState.update { newState->
+                        newState.copy(
+                            isFavourite = !isFavourite
+                        )
+                    }
+                    _nowPlayingEvents.send(
+                        NowPlayingEvents.ShowToast(
+                            message = UiText.StringResource(
+                                R.string.favourite_playlist_updated
+                            )
                         )
                     )
-                )
+                }
             }
         }
     }
@@ -287,19 +294,12 @@ class NowPlayingViewModel(
         viewModelScope.launch {
             when (navKey.nowPlayingData) {
                 is NowPlayingData.PlayBySongId -> {
-                    val song = async {
-                        val songId = navKey.nowPlayingData.songId
-                        songRepository.getSongBySongId(songId = songId)
-                    }.await()
-                    val id = song.id
-                    val isFavourite = playlistsWithSongsRepository.isSongInFavourite(songDbId = id)
-                    isFavourite.collect { isFavourite ->
-                        _nowPlayingUiState.update { newState ->
-                            newState.copy(
-                                isFavourite = isFavourite,
-                                song = song,
-                            )
-                        }
+                    val id = navKey.nowPlayingData.id
+                    val song = songRepository.getSongById(id = id)
+                    _nowPlayingUiState.update { newState ->
+                        newState.copy(
+                            song = song,
+                        )
                     }
                     song.let {
                         playbackController.setMediaItemByIndex(mediaItemsIndex = song.id - 1)
@@ -309,6 +309,28 @@ class NowPlayingViewModel(
                 NowPlayingData.Play -> playByMediaOrder()
 
                 NowPlayingData.Shuffle -> shuffle()
+
+                is NowPlayingData.PlayByPlaylist -> {
+                    viewModelScope.launch {
+                        val playlistName = navKey.nowPlayingData.playlistName
+                        val songs =
+                            playlistsWithSongsRepository.getPlaylistByName(playlistName = playlistName)
+                                .first().songs
+                        playbackController.setPlayList(songList = songs)
+                        play()
+                    }
+                }
+
+                is NowPlayingData.ShuffleByPlaylist -> {
+                    viewModelScope.launch {
+                        val playlistName = navKey.nowPlayingData.playlistName
+                        val songs =
+                            playlistsWithSongsRepository.getPlaylistByName(playlistName = playlistName)
+                                .first().songs
+                        playbackController.setPlayList(songList = songs)
+                        shuffle()
+                    }
+                }
             }
         }
     }
@@ -322,7 +344,8 @@ class NowPlayingViewModel(
                     PlayListModel(
                         name = playlist.playlistName,
                         total = songs.size,
-                        embeddedArt = songs.firstOrNull()?.embeddedArt
+                        embeddedArt = playlist.embeddedUri ?: songs.firstOrNull()?.embeddedArt,
+                        errorDrawable = R.drawable.favourite_playlist
                     )
                 }
 
@@ -332,7 +355,7 @@ class NowPlayingViewModel(
                     PlayListModel(
                         name = playlist.playlistName,
                         total = songs.size,
-                        embeddedArt = songs.firstOrNull()?.embeddedArt
+                        embeddedArt = playlist.embeddedUri ?: songs.firstOrNull()?.embeddedArt
                     )
                 }
 
@@ -381,28 +404,25 @@ class NowPlayingViewModel(
             playbackController.mediaPlayerState.collect { mediaPlayerState ->
                 val song =
                     songRepository.getSongByMediaItem(mediaItem = mediaPlayerState.currentMedia)
-                song?.let {
-                    playlistsWithSongsRepository.isSongInFavourite(songDbId = song.id)
-                        .collect { isFavourite ->
-                            _nowPlayingUiState.update { newState ->
-                                newState.copy(
-                                    mediaPlayerState = mediaPlayerState,
-                                    song = song,
-                                    isFavourite = isFavourite
-                                )
-                            }
-                        }
-                } ?: _nowPlayingUiState.update { newState ->
+                _nowPlayingUiState.update { newState ->
                     newState.copy(
                         mediaPlayerState = mediaPlayerState,
-                        song = Song(),
-                        isFavourite = false
+                        song = song ?: Song()
                     )
+                }
+                song?.let {
+                    val isFavourite = playlistsWithSongsRepository.isSongInFavourite(songDbId = song.id).first()
+                        _nowPlayingUiState.update { newState->
+                            newState.copy(
+                                isFavourite = isFavourite
+                            )
+                        }
                 }
 
             }
         }
     }
+
 
     private fun play() {
         playbackController.play()

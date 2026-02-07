@@ -36,7 +36,7 @@ import com.example.vibeplayer.core.presentation.designsystem.theme.textSecondary
 @Composable
 fun VibePlayerMiniBar(
     modifier: Modifier = Modifier,
-    onClick: (Long) -> Unit,
+    onClick: (Int) -> Unit,
     song: Song,
     isPlaying: Boolean,
     play: () -> Unit,
@@ -61,7 +61,7 @@ fun VibePlayerMiniBar(
             .blur(12.dp)
             .clickable(
                 onClick = {
-                    onClick(song.songId)
+                    onClick(song.id)
                 }
             )
             .padding(16.dp)
