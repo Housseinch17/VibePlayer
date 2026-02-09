@@ -6,6 +6,8 @@ import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
 import androidx.media3.common.MediaItem
+import androidx.room.withTransaction
+import com.example.vibeplayer.core.database.SongDatabase
 import com.example.vibeplayer.core.database.song.SongDao
 import com.example.vibeplayer.core.database.song.toDomainModel
 import com.example.vibeplayer.core.database.song.toEntity
@@ -26,7 +28,8 @@ import java.util.concurrent.TimeUnit
 
 class SongRepositoryImpl(
     private val context: Context,
-    private val songDao: SongDao
+    private val songDao: SongDao,
+    private val songDatabase: SongDatabase,
 ) : SongRepository {
     private val dispatchersIo = Dispatchers.IO
 
@@ -35,7 +38,10 @@ class SongRepositoryImpl(
             val songs = songDao.getSongs().first()
             songs.map { songEntity ->
                 if (!File(songEntity.filePath).exists()) {
-                    songDao.removeSong(songEntity)
+                    //check PlaylistsAndSongsEntity to know how the song will be deleted
+                    //from SongEntity and PlaylistsAndSongsEntity at the same time when we only
+                    //delete it from SongEntity
+                        songDao.removeSong(songEntity)
                 }
             }
             Result.Success(Unit)
@@ -77,19 +83,30 @@ class SongRepositoryImpl(
         size: Long,
     ): Result<List<Song>> = withContext(dispatchersIo) {
         return@withContext try {
-            val songs = fetchSongs(
+            //get old songs before scanning
+            val oldSongs = songDao.getSongs().first()
+            val scannedSongs = fetchSongs(
                 duration = duration,
                 size = size
             )
-            val songsToEntity = songs.map {
+            val scannedSongsIds = scannedSongs.map { it.songId }
+            val missingSongIds = oldSongs.map {
+                it.songId
+            }.filter {
+                it !in scannedSongsIds
+            }
+            val songsToEntity = scannedSongs.map {
                 it.toEntity()
             }
-            //remove song
-            songDao.removeAllSongs()
-            //reset primary key that is already generated
-            songDao.deletePrimaryKeyIndex()
-            songDao.upsertAll(songsToEntity)
-            Result.Success(data = songs)
+            songDatabase.withTransaction {
+                //check PlaylistsAndSongsEntity to know how the song will be deleted
+                //from SongEntity and PlaylistsAndSongsEntity at the same time when we only
+                //delete it from SongEntity
+                songDao.deleteMissingSongsById(missingSongIds = missingSongIds)
+                songDao.upsertAll(songsToEntity)
+            }
+
+            Result.Success(data = scannedSongs)
         } catch (e: Exception) {
             if (e is CancellationException) {
                 throw e

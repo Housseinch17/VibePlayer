@@ -18,13 +18,13 @@ interface PlaylistsAndSongsDao {
     suspend fun addSongToPlaylist(crossRef: PlaylistsAndSongsEntity)
 
     @Transaction
-    @Query("SELECT * FROM playlistentity")
+    @Query("SELECT * FROM PlaylistEntity")
     fun getPlaylistsWithSongs(): Flow<List<PlaylistWithSongs>>
 
-    @Query("SELECT EXISTS( SELECT 1 FROM playlistsandsongsentity JOIN playlistentity ON playlistentity.playlistId = playlistsandsongsentity.playlistId WHERE playlistentity.playlistName = 'Favourite' AND playlistsandsongsentity.id = :songDbId)")
+    @Query("SELECT EXISTS( SELECT 1 FROM PlaylistsAndSongsEntity JOIN playlistentity ON playlistentity.playlistId = PlaylistsAndSongsEntity.playlistId WHERE playlistentity.playlistName = 'Favourite' AND PlaylistsAndSongsEntity.songDbId = :songDbId)")
     fun isSongInFavourite(songDbId: Int): Flow<Boolean>
 
-    @Query("SELECT EXISTS(SELECT 1 FROM playlistsandsongsentity JOIN playlistentity ON playlistentity.playlistId = playlistsandsongsentity.playlistId WHERE playlistentity.playlistName = :playlistName AND playlistsandsongsentity.id = :songDbId )")
+    @Query("SELECT EXISTS(SELECT 1 FROM PlaylistsAndSongsEntity JOIN playlistentity ON playlistentity.playlistId = PlaylistsAndSongsEntity.playlistId WHERE playlistentity.playlistName = :playlistName AND PlaylistsAndSongsEntity.songDbId = :songDbId )")
     suspend fun isSongAlreadyExistInPlaylist(playlistName: String, songDbId: Int): Boolean
 
     @Query("DELETE FROM PlaylistsAndSongsEntity WHERE playlistId IN ( SELECT playlistId FROM PlaylistEntity WHERE playlistName = :playlistName)")
@@ -33,7 +33,7 @@ interface PlaylistsAndSongsDao {
     @Query("DELETE FROM PlaylistEntity WHERE playlistName = :playlistName")
     suspend fun deletePlaylistByName(playlistName: String)
 
-    @Query("DELETE FROM playlistsandsongsentity WHERE playlistId = :playlistId AND id = :songDbId")
+    @Query("DELETE FROM PlaylistsAndSongsEntity WHERE playlistId = :playlistId AND songDbId = :songDbId")
     suspend fun deleteSongFromPlaylist(playlistId: Int, songDbId: Int)
 
     @Transaction

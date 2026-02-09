@@ -63,7 +63,7 @@ class PlaylistsWithSongsRepositoryImpl(
                     playlistsAndSongsDao.addSongToPlaylist(
                         crossRef = PlaylistsAndSongsEntity(
                             playlistId = playlistId,
-                            id = songRoomId
+                            songDbId = songRoomId
                         )
                     )
                 }
@@ -82,7 +82,7 @@ class PlaylistsWithSongsRepositoryImpl(
                 playlistsAndSongsDao.addSongToPlaylist(
                     crossRef = PlaylistsAndSongsEntity(
                         playlistId = playlistId,
-                        id = songRoomId
+                        songDbId = songRoomId
                     )
                 )
             }
@@ -147,7 +147,7 @@ class PlaylistsWithSongsRepositoryImpl(
             playlistsAndSongsDao.addSongToPlaylist(
                 crossRef = PlaylistsAndSongsEntity(
                     playlistId = playlistId,
-                    id = songDbId
+                    songDbId = songDbId
                 ),
             )
             Result.Success(Unit)

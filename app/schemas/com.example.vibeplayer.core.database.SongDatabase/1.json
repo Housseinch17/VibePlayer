@@ -2,15 +2,15 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "cfba6248b0b601247275486fe6db940f",
+    "identityHash": "38e8bf380a6986bf3b0bb2cee96db1af",
     "entities": [
       {
         "tableName": "SongEntity",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `songId` INTEGER NOT NULL, `title` TEXT NOT NULL, `artist` TEXT NOT NULL, `filePath` TEXT NOT NULL, `duration` INTEGER NOT NULL, `size` INTEGER NOT NULL, `embeddedArt` TEXT, `audioUri` TEXT)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`songDbId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `songId` INTEGER NOT NULL, `title` TEXT NOT NULL, `artist` TEXT NOT NULL, `filePath` TEXT NOT NULL, `duration` INTEGER NOT NULL, `size` INTEGER NOT NULL, `embeddedArt` TEXT, `audioUri` TEXT)",
         "fields": [
           {
-            "fieldPath": "id",
-            "columnName": "id",
+            "fieldPath": "songDbId",
+            "columnName": "songDbId",
             "affinity": "INTEGER",
             "notNull": true
           },
@@ -64,9 +64,20 @@
         "primaryKey": {
           "autoGenerate": true,
           "columnNames": [
-            "id"
+            "songDbId"
           ]
-        }
+        },
+        "indices": [
+          {
+            "name": "index_SongEntity_songId",
+            "unique": true,
+            "columnNames": [
+              "songId"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_SongEntity_songId` ON `${TABLE_NAME}` (`songId`)"
+          }
+        ]
       },
       {
         "tableName": "PlaylistEntity",
@@ -99,7 +110,7 @@
       },
       {
         "tableName": "PlaylistsAndSongsEntity",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`playlistId` INTEGER NOT NULL, `id` INTEGER NOT NULL, PRIMARY KEY(`playlistId`, `id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`playlistId` INTEGER NOT NULL, `songDbId` INTEGER NOT NULL, PRIMARY KEY(`playlistId`, `songDbId`), FOREIGN KEY(`songDbId`) REFERENCES `SongEntity`(`songDbId`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "playlistId",
@@ -108,8 +119,8 @@
             "notNull": true
           },
           {
-            "fieldPath": "id",
-            "columnName": "id",
+            "fieldPath": "songDbId",
+            "columnName": "songDbId",
             "affinity": "INTEGER",
             "notNull": true
           }
@@ -118,14 +129,47 @@
           "autoGenerate": false,
           "columnNames": [
             "playlistId",
-            "id"
+            "songDbId"
           ]
-        }
+        },
+        "indices": [
+          {
+            "name": "index_PlaylistsAndSongsEntity_songDbId",
+            "unique": false,
+            "columnNames": [
+              "songDbId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_PlaylistsAndSongsEntity_songDbId` ON `${TABLE_NAME}` (`songDbId`)"
+          },
+          {
+            "name": "index_PlaylistsAndSongsEntity_playlistId",
+            "unique": false,
+            "columnNames": [
+              "playlistId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_PlaylistsAndSongsEntity_playlistId` ON `${TABLE_NAME}` (`playlistId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "SongEntity",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "songDbId"
+            ],
+            "referencedColumns": [
+              "songDbId"
+            ]
+          }
+        ]
       }
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'cfba6248b0b601247275486fe6db940f')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '38e8bf380a6986bf3b0bb2cee96db1af')"
     ]
   }
 }

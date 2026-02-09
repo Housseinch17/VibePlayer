@@ -9,7 +9,7 @@ import com.example.vibeplayer.core.database.song.SongEntity
 data class SongWithPlaylists(
     @Embedded val song: SongEntity,
     @Relation(
-        parentColumn = "id",
+        parentColumn = "songDbId",
         entity = PlaylistEntity::class,
         entityColumn = "playlistId",
         associateBy = Junction(PlaylistsAndSongsEntity::class)

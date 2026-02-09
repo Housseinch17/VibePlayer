@@ -33,10 +33,13 @@ interface SongDao {
     @Query("DELETE FROM sqlite_sequence WHERE name = 'SongEntity'")
     suspend fun deletePrimaryKeyIndex()
 
+    @Query("DELETE FROM songentity WHERE songId IN (:missingSongIds)")
+    suspend fun deleteMissingSongsById(missingSongIds: List<Long>)
+
     @Query("Select * From SongEntity where audioUri = :uri limit 1")
     suspend fun getSongByUri(uri: Uri?): SongEntity?
 
-    @Query("Select * From SongEntity where id = :id limit 1")
+    @Query("Select * From SongEntity where songDbId = :id limit 1")
     suspend fun getSongById(id: Int): SongEntity
 
     @Query(

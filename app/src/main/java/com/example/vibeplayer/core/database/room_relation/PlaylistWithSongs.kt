@@ -12,7 +12,7 @@ data class PlaylistWithSongs(
 //The entityColumn always refers to a field in the target entity (the list you want to retrieve)
     @Relation(
         parentColumn = "playlistId",
-        entityColumn = "id",
+        entityColumn = "songDbId",
         associateBy = Junction(PlaylistsAndSongsEntity::class)
     )
     val songs: List<SongEntity>?

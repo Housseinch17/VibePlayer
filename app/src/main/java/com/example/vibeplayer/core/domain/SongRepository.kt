@@ -1,7 +1,6 @@
 package com.example.vibeplayer.core.domain
 
 import androidx.media3.common.MediaItem
-import com.example.vibeplayer.core.database.song.SongEntity
 import kotlinx.coroutines.flow.Flow
 
 interface SongRepository {

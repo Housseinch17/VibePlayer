@@ -5,7 +5,7 @@ import com.example.vibeplayer.core.domain.Song
 fun List<SongEntity>.toDomainModel(): List<Song> {
     return this.map { entity ->
         Song(
-            id = entity.id,
+            id = entity.songDbId,
             songId = entity.songId,
             title = entity.title,
             artist = entity.artist,
@@ -21,7 +21,7 @@ fun List<SongEntity>.toDomainModel(): List<Song> {
 fun List<Song>.toSongEntity(): List<SongEntity>{
     return this.map { song ->
         SongEntity(
-            id = song.id,
+            songDbId = song.id,
             songId = song.songId,
             title = song.title,
             artist = song.artist,
@@ -35,7 +35,7 @@ fun List<Song>.toSongEntity(): List<SongEntity>{
 }
 fun SongEntity.toSong(): Song {
     return Song(
-        id = this.id,
+        id = this.songDbId,
         songId = this.songId,
         title = this.title,
         artist = this.artist,
@@ -49,7 +49,7 @@ fun SongEntity.toSong(): Song {
 
 fun Song.toEntity(): SongEntity {
     return SongEntity(
-        id = this.id,
+        songDbId = this.id,
         songId = this.songId,
         title = this.title,
         artist = this.artist,
