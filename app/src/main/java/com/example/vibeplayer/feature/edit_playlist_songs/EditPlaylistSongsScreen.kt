@@ -1,5 +1,6 @@
 package com.example.vibeplayer.feature.edit_playlist_songs
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -15,18 +16,58 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.vibeplayer.R
+import com.example.vibeplayer.app.navigation.NavigationScreens
 import com.example.vibeplayer.core.presentation.designsystem.components.VibePlayerIconShape
 import com.example.vibeplayer.core.presentation.designsystem.theme.VibePlayerIcons
 import com.example.vibeplayer.core.presentation.designsystem.theme.bodyLargeRegular
 import com.example.vibeplayer.core.presentation.designsystem.theme.textPrimary
 import com.example.vibeplayer.core.presentation.designsystem.theme.textSecondary
+import com.example.vibeplayer.core.presentation.ui.ObserveAsEvents
 import com.example.vibeplayer.feature.add_songs.SongItemWithClearButton
+import org.koin.androidx.compose.koinViewModel
+import org.koin.core.parameter.parametersOf
+
+@Composable
+fun EditPlaylistSongsRoot(
+    modifier: Modifier = Modifier,
+    key: NavigationScreens.EditPlaylistSongs,
+    navigateBack: () -> Unit,
+) {
+    //here to use the key in viewmodel we have to pass it in parametersOf
+    val editPlaylistSongsViewModel = koinViewModel<EditPlaylistSongsViewModel> {
+        parametersOf(key)
+    }
+    val editPlaylistUiState by editPlaylistSongsViewModel.state.collectAsStateWithLifecycle()
+
+    val context = LocalContext.current
+
+    ObserveAsEvents(editPlaylistSongsViewModel.events) { events ->
+        when (events) {
+            EditPlaylistSongsEvents.NavigateBack -> navigateBack()
+
+            is EditPlaylistSongsEvents.ShowToast -> Toast.makeText(
+                context,
+                events.message.asString(context = context),
+                Toast.LENGTH_LONG
+            ).show()
+        }
+    }
+
+    EditPlaylistSongsScreen(
+        modifier = modifier.fillMaxSize(),
+        state = editPlaylistUiState,
+        onActions = editPlaylistSongsViewModel::onActions
+    )
+}
 
 @Composable
 fun EditPlaylistSongsScreen(

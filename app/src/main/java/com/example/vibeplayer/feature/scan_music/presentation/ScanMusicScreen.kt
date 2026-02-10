@@ -15,6 +15,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -22,6 +23,7 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.vibeplayer.R
 import com.example.vibeplayer.core.presentation.designsystem.components.VibePlayerIconShape
 import com.example.vibeplayer.core.presentation.designsystem.components.VibePlayerPrimaryButton
@@ -32,6 +34,29 @@ import com.example.vibeplayer.core.presentation.designsystem.theme.VibePlayerIco
 import com.example.vibeplayer.core.presentation.designsystem.theme.VibePlayerImages
 import com.example.vibeplayer.core.presentation.designsystem.theme.bodyLargeMedium
 import com.example.vibeplayer.core.presentation.designsystem.theme.textPrimary
+import com.example.vibeplayer.core.presentation.ui.ObserveAsEvents
+import org.koin.androidx.compose.koinViewModel
+
+@Composable
+fun ScanMusicRoot(
+    modifier: Modifier = Modifier,
+    scanMusicViewModel: ScanMusicViewModel = koinViewModel<ScanMusicViewModel>(),
+    navigateBack: () -> Unit
+) {
+    val scanMusicUi by scanMusicViewModel.scanMusicUi.collectAsStateWithLifecycle()
+
+    ObserveAsEvents(scanMusicViewModel.scanMusicEvents) { events ->
+        when (events) {
+            //backstack.removeLastOrNull() similar to navigateUp()
+            ScanMusicEvents.NavigateBack -> navigateBack()
+        }
+    }
+    ScanMusicScreen(
+        modifier = modifier.fillMaxSize(),
+        scanMusicUi = scanMusicUi,
+        onActions = scanMusicViewModel::onActions
+    )
+}
 
 @Composable
 fun ScanMusicScreen(
@@ -52,7 +77,9 @@ fun ScanMusicScreen(
     }
 
     Scaffold(
-        modifier = modifier.fillMaxSize().padding(horizontal = 16.dp),
+        modifier = modifier
+            .fillMaxSize()
+            .padding(horizontal = 16.dp),
         topBar = {
             Box(
                 modifier = Modifier.fillMaxWidth(),

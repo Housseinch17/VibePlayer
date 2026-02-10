@@ -17,18 +17,48 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.vibeplayer.R
+import com.example.vibeplayer.app.domain.NowPlayingData
 import com.example.vibeplayer.core.domain.Song
 import com.example.vibeplayer.core.presentation.designsystem.components.VibePlayerSearchField
 import com.example.vibeplayer.core.presentation.designsystem.theme.bodyLargeMedium
 import com.example.vibeplayer.core.presentation.designsystem.theme.bodyMediumRegular
 import com.example.vibeplayer.core.presentation.designsystem.theme.buttonPrimary
 import com.example.vibeplayer.core.presentation.designsystem.theme.textSecondary
+import com.example.vibeplayer.core.presentation.ui.ObserveAsEvents
 import com.example.vibeplayer.feature.main.presentation.SongItem
+import org.koin.androidx.compose.koinViewModel
+
+@Composable
+fun SearchRoot(
+    modifier: Modifier = Modifier,
+    searchViewModel: SearchViewModel = koinViewModel<SearchViewModel>(),
+    navigateBack: () -> Unit,
+    navigateToNowPlaying: (NowPlayingData) -> Unit,
+    ) {
+    val searchUiState by searchViewModel.searchUiState.collectAsStateWithLifecycle()
+
+    ObserveAsEvents(searchViewModel.searchEvents) { events ->
+        when (events) {
+            SearchEvents.NavigateBack -> navigateBack()
+            is SearchEvents.NavigateToNowPlaying -> {
+                navigateToNowPlaying(events.nowPlayingData)
+            }
+        }
+    }
+
+    SearchScreen(
+        modifier = modifier.fillMaxSize(),
+        searchUiState = searchUiState,
+        searchActions = searchViewModel::onActions
+    )
+}
 
 @Composable
 fun SearchScreen(
@@ -37,7 +67,9 @@ fun SearchScreen(
     searchActions: (SearchActions) -> Unit,
 ) {
     Box(
-        modifier = modifier.fillMaxSize().padding(horizontal = 16.dp),
+        modifier = modifier
+            .fillMaxSize()
+            .padding(horizontal = 16.dp),
         contentAlignment = Alignment.TopStart
     ) {
         Column(
@@ -98,7 +130,7 @@ fun SearchTopContent(
         VibePlayerSearchField(
             modifier = Modifier.weight(1f),
             searchQuery = searchQuery,
-             updateSearchQuery = { newQuery ->
+            updateSearchQuery = { newQuery ->
                 updateSearchQuery(newQuery)
             },
             onClear = onClear

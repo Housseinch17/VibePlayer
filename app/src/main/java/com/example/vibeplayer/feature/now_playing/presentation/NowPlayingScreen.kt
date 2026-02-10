@@ -3,6 +3,7 @@
 
 package com.example.vibeplayer.feature.now_playing.presentation
 
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -39,17 +40,21 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.vibeplayer.R
+import com.example.vibeplayer.app.navigation.NavigationScreens
 import com.example.vibeplayer.core.domain.Song
 import com.example.vibeplayer.core.presentation.designsystem.components.VibePlayerAsyncImage
 import com.example.vibeplayer.core.presentation.designsystem.components.VibePlayerBottomSheet
@@ -66,7 +71,50 @@ import com.example.vibeplayer.core.presentation.designsystem.theme.bodySmallRegu
 import com.example.vibeplayer.core.presentation.designsystem.theme.surfaceBG
 import com.example.vibeplayer.core.presentation.designsystem.theme.surfaceOutline
 import com.example.vibeplayer.core.presentation.designsystem.theme.textPrimary
+import com.example.vibeplayer.core.presentation.ui.ObserveAsEvents
 import com.example.vibeplayer.feature.main.presentation.PlayListModel
+import org.koin.androidx.compose.koinViewModel
+import org.koin.core.parameter.parametersOf
+
+@Composable
+fun NowPlayingRoot(
+    modifier: Modifier = Modifier,
+    key: NavigationScreens.NowPlaying,
+    updateIsMinimized: (Boolean) -> Unit,
+    navigateBack: () -> Unit,
+) {
+    //here to use the key in viewmodel we have to pass it in parametersOf
+    val nowPlayingViewModel = koinViewModel<NowPlayingViewModel> {
+        parametersOf(key)
+    }
+    val nowPlayingUiState by nowPlayingViewModel.nowPlayingUiState.collectAsStateWithLifecycle(
+        initialValue = NowPlayingUiState()
+    )
+
+    val context = LocalContext.current
+    ObserveAsEvents(nowPlayingViewModel.nowPlayingEvents) { events ->
+        when (events) {
+            is NowPlayingEvents.Minimize -> {
+                updateIsMinimized(true)
+                navigateBack()
+            }
+
+            is NowPlayingEvents.ShowToast -> {
+                Toast.makeText(
+                    context,
+                    events.message.asString(context = context),
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+        }
+    }
+
+    NowPlayingScreen(
+        modifier = modifier.fillMaxSize(),
+        nowPlayingUiState = nowPlayingUiState,
+        nowPlayingActions = nowPlayingViewModel::onActions
+    )
+}
 
 @Composable
 fun NowPlayingScreen(
@@ -78,7 +126,8 @@ fun NowPlayingScreen(
         nowPlayingActions(NowPlayingActions.Minimize)
     }
     Scaffold(
-        modifier = modifier.fillMaxSize()
+        modifier = modifier
+            .fillMaxSize()
             .padding(horizontal = 16.dp),
         topBar = {
             Row(

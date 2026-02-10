@@ -2,6 +2,7 @@
 
 package com.example.vibeplayer.feature.add_songs
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -27,6 +28,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -36,7 +38,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.vibeplayer.R
+import com.example.vibeplayer.app.navigation.NavigationScreens
 import com.example.vibeplayer.core.domain.Song
 import com.example.vibeplayer.core.presentation.designsystem.components.VibePlayerIconShape
 import com.example.vibeplayer.core.presentation.designsystem.components.VibePlayerPrimaryButton
@@ -46,7 +50,42 @@ import com.example.vibeplayer.core.presentation.designsystem.theme.VibePlayerIco
 import com.example.vibeplayer.core.presentation.designsystem.theme.bodyLargeMedium
 import com.example.vibeplayer.core.presentation.designsystem.theme.textPrimary
 import com.example.vibeplayer.core.presentation.designsystem.theme.textSecondary
+import com.example.vibeplayer.core.presentation.ui.ObserveAsEvents
 import com.example.vibeplayer.feature.main.presentation.SongItem
+import org.koin.androidx.compose.koinViewModel
+import org.koin.core.parameter.parameterSetOf
+
+@Composable
+fun AddSongsRoot(
+    modifier: Modifier = Modifier,
+    key: NavigationScreens.AddSong,
+    navigateBack: () -> Unit,
+) {
+    val addSongsViewModel: AddSongsViewModel = koinViewModel<AddSongsViewModel> {
+        parameterSetOf(key)
+    }
+    val addSongsUiState by addSongsViewModel.state.collectAsStateWithLifecycle()
+
+    val context = LocalContext.current
+
+    ObserveAsEvents(addSongsViewModel.events) { events ->
+        when (events) {
+            AddSongsEvents.NavigateBack -> navigateBack()
+            is AddSongsEvents.ShowToast -> Toast.makeText(
+                context,
+                events.message.asString(context = context),
+                Toast.LENGTH_LONG
+            ).show()
+        }
+    }
+
+    AddSongsScreen(
+        modifier = modifier.fillMaxSize(),
+        state = addSongsUiState,
+        onActions = addSongsViewModel::onActions
+    )
+
+}
 
 @Composable
 fun AddSongsScreen(

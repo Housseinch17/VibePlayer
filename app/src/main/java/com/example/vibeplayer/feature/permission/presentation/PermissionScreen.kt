@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -23,6 +24,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.vibeplayer.R
 import com.example.vibeplayer.app.presentation.MainActivity
 import com.example.vibeplayer.core.presentation.designsystem.components.VibePLayerLifecycleEventListener
@@ -32,6 +34,31 @@ import com.example.vibeplayer.core.presentation.designsystem.theme.VibePlayerIco
 import com.example.vibeplayer.core.presentation.designsystem.theme.bodyMediumRegular
 import com.example.vibeplayer.core.presentation.designsystem.theme.textPrimary
 import com.example.vibeplayer.core.presentation.designsystem.theme.textSecondary
+import com.example.vibeplayer.core.presentation.ui.ObserveAsEvents
+import org.koin.androidx.compose.koinViewModel
+
+@Composable
+fun PermissionRoot(
+    modifier: Modifier = Modifier,
+    permissionViewModel: PermissionViewModel = koinViewModel<PermissionViewModel>(),
+    navigateMainPage: () -> Unit,
+) {
+    val permissionUiState by permissionViewModel.permissionUiState.collectAsStateWithLifecycle()
+
+    ObserveAsEvents(permissionViewModel.permissionEvents) { permissionEvents ->
+        when (permissionEvents) {
+            PermissionEvents.NavigateMainPage -> {
+                navigateMainPage()
+            }
+        }
+    }
+
+    PermissionScreen(
+        modifier = modifier.fillMaxSize(),
+        permissionUiState = permissionUiState,
+        onActions = permissionViewModel::onActions
+    )
+}
 
 @Composable
 fun PermissionScreen(
@@ -54,6 +81,7 @@ fun PermissionScreen(
                     onActions(PermissionActions.NavigateMainPage)
                 }
             }
+
             else -> {}
         }
     }
@@ -106,7 +134,7 @@ fun PermissionScreen(
                 )
             )
 
-            VibePlayerPrimaryButton (
+            VibePlayerPrimaryButton(
                 modifier = Modifier.padding(top = 20.dp),
                 text = stringResource(R.string.allow_access),
             ) {

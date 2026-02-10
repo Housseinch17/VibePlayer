@@ -61,6 +61,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.vibeplayer.R
 import com.example.vibeplayer.app.domain.NowPlayingData
 import com.example.vibeplayer.core.data.Constants.FAVOURITE
@@ -87,9 +88,75 @@ import com.example.vibeplayer.core.presentation.designsystem.theme.surfaceBG
 import com.example.vibeplayer.core.presentation.designsystem.theme.surfaceOutline
 import com.example.vibeplayer.core.presentation.designsystem.theme.textPrimary
 import com.example.vibeplayer.core.presentation.designsystem.theme.textSecondary
+import com.example.vibeplayer.core.presentation.ui.ObserveAsEvents
 import com.example.vibeplayer.core.util.copyImageToInternalStorage
 import com.example.vibeplayer.core.util.toMinutesSeconds
 import kotlinx.coroutines.launch
+import org.koin.androidx.compose.koinViewModel
+
+
+@Composable
+fun MainRoot(
+    modifier: Modifier = Modifier,
+    mainViewModel: MainViewModel = koinViewModel<MainViewModel>(),
+    navigateToScanMusic: () -> Unit,
+    navigateToNowPlaying: (NowPlayingData) -> Unit,
+    navigateToSearch: () -> Unit,
+    navigateToAddSongs: (playlistName: String, playlistId: Int) -> Unit,
+    navigateToPlaylist: (playlistName: String) -> Unit,
+    navigateToEdit: (playlistName: String, playlistId: Int) -> Unit,
+    isMinimized: Boolean,
+) {
+    val mainUiState by mainViewModel.mainPageUiState.collectAsStateWithLifecycle()
+
+    val context = LocalContext.current
+    ObserveAsEvents(mainViewModel.mainPageEvents) { events ->
+        when (events) {
+            MainPageEvents.NavigateToScanMusic -> {
+                navigateToScanMusic()
+            }
+
+            is MainPageEvents.NavigateToNowPlaying -> {
+                navigateToNowPlaying(events.nowPlayingData)
+            }
+
+            MainPageEvents.NavigateToSearch -> {
+                navigateToSearch()
+            }
+
+            is MainPageEvents.NavigateToAddSongs -> {
+                navigateToAddSongs(
+                    events.playlistName,
+                    events.playlistId
+                )
+            }
+
+            is MainPageEvents.ShowToast -> Toast.makeText(
+                context,
+                events.message.asString(context = context),
+                Toast.LENGTH_LONG
+            ).show()
+
+            is MainPageEvents.NavigateToPlaylist -> {
+                navigateToPlaylist(events.playlistName)
+            }
+
+            is MainPageEvents.NavigateToEdit -> {
+                navigateToEdit(
+                    events.playlistName,
+                    events.playlistId
+                )
+            }
+        }
+    }
+
+    MainPageScreen(
+        modifier = modifier.fillMaxSize(),
+        mainPageUiState = mainUiState,
+        onActions = mainViewModel::onActions,
+        isMinimized = isMinimized
+    )
+}
 
 @Composable
 fun MainPageScreen(

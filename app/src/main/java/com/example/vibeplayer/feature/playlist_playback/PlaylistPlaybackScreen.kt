@@ -19,12 +19,16 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.vibeplayer.R
+import com.example.vibeplayer.app.domain.NowPlayingData
+import com.example.vibeplayer.app.navigation.NavigationScreens
 import com.example.vibeplayer.core.domain.Song
 import com.example.vibeplayer.core.presentation.designsystem.components.VibePlayerAsyncImage
 import com.example.vibeplayer.core.presentation.designsystem.components.VibePlayerIconShape
@@ -36,7 +40,46 @@ import com.example.vibeplayer.core.presentation.designsystem.theme.bodyLargeRegu
 import com.example.vibeplayer.core.presentation.designsystem.theme.surfaceOutline
 import com.example.vibeplayer.core.presentation.designsystem.theme.textPrimary
 import com.example.vibeplayer.core.presentation.designsystem.theme.textSecondary
+import com.example.vibeplayer.core.presentation.ui.ObserveAsEvents
 import com.example.vibeplayer.feature.main.presentation.SongItem
+import org.koin.androidx.compose.koinViewModel
+import org.koin.core.parameter.parametersOf
+
+
+@Composable
+fun PlaylistPlaybackRoot(
+    modifier: Modifier = Modifier,
+    key: NavigationScreens.PlaylistPlayback,
+    navigateBack: () -> Unit,
+    navigateToAddSongs: (playlistName: String, playlistId: Int) -> Unit,
+    navigateToNowPlaying: (nowPlayingData: NowPlayingData) -> Unit,
+
+    ) {
+    //here to use the key in viewmodel we have to pass it in parametersOf
+    val playlistPlaybackViewModel = koinViewModel<PlaylistPlaybackViewModel> {
+        parametersOf(key)
+    }
+    val playlistPlaybackUiState by playlistPlaybackViewModel.state.collectAsStateWithLifecycle()
+
+    ObserveAsEvents(playlistPlaybackViewModel.events) { events ->
+        when (events) {
+            PlaylistPlaybackEvents.NavigateBack -> navigateBack()
+            is PlaylistPlaybackEvents.AddSongs -> navigateToAddSongs(
+                events.playlistName,
+                events.playlistId
+            )
+
+            is PlaylistPlaybackEvents.NavigateToNowPlaying -> navigateToNowPlaying(events.nowPlayingData)
+        }
+    }
+
+    PlaylistPlaybackScreen(
+        modifier = modifier.fillMaxSize(),
+        state = playlistPlaybackUiState,
+        onActions = playlistPlaybackViewModel::onActions
+    )
+
+}
 
 @Composable
 fun PlaylistPlaybackScreen(
