@@ -743,14 +743,6 @@ fun PlaylistContent(
                 onMenuDotsClick = { playListModel ->
                     onMenuDotsClick(playListModel)
                 },
-                currentPlayListModel = currentPlayListModel,
-                onDismiss = onDismiss,
-                onPlayBottomSheetClick = onPlayBottomSheetClick,
-                onEditClick = onEditClick,
-                onRenameClick = onRenameClick,
-                onChangeCoverClick = onChangeCoverClick,
-                onDeleteClick = onDeleteClick,
-                showCurrentPlaylistBottomSheet = showCurrentPlaylistBottomSheet,
             )
         } else {
             Spacer(modifier = Modifier.height(8.dp))
@@ -761,6 +753,17 @@ fun PlaylistContent(
                 buttonContentIconDescription = stringResource(R.string.add),
                 buttonContentText = stringResource(R.string.create_playlist),
                 borderStroke = BorderStroke(1.dp, MaterialTheme.colorScheme.surfaceOutline)
+            )
+        }
+        if (showCurrentPlaylistBottomSheet) {
+            MainScreenBottomSheet(
+                playListModel = currentPlayListModel,
+                onDismiss = onDismiss,
+                onPlayBottomSheetClick = onPlayBottomSheetClick,
+                onEditClick = onEditClick,
+                onRenameClick = onRenameClick,
+                onChangeCoverClick = onChangeCoverClick,
+                onDeleteClick = onDeleteClick
             )
         }
     }
@@ -894,14 +897,6 @@ fun MyPlaylists(
     modifier: Modifier = Modifier,
     myPlatListList: List<PlayListModel>,
     onMenuDotsClick: (PlayListModel) -> Unit,
-    currentPlayListModel: PlayListModel,
-    onDismiss: () -> Unit,
-    onPlayBottomSheetClick: (String) -> Unit,
-    onEditClick: (playlistId: Int, playlistName: String) -> Unit,
-    onRenameClick: () -> Unit,
-    onChangeCoverClick: () -> Unit,
-    onDeleteClick: () -> Unit,
-    showCurrentPlaylistBottomSheet: Boolean,
 ) {
     Box(
         modifier = modifier,
@@ -921,17 +916,6 @@ fun MyPlaylists(
                     color = MaterialTheme.colorScheme.surfaceOutline
                 )
             }
-        }
-        if (showCurrentPlaylistBottomSheet) {
-            MainScreenBottomSheet(
-                playListModel = currentPlayListModel,
-                onDismiss = onDismiss,
-                onPlayBottomSheetClick = onPlayBottomSheetClick,
-                onEditClick = onEditClick,
-                onRenameClick = onRenameClick,
-                onChangeCoverClick = onChangeCoverClick,
-                onDeleteClick = onDeleteClick
-            )
         }
     }
 }

@@ -12,6 +12,7 @@ import com.example.vibeplayer.core.domain.Result
 import com.example.vibeplayer.core.domain.Song
 import com.example.vibeplayer.core.domain.SongRepository
 import com.example.vibeplayer.core.presentation.ui.UiText
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
@@ -87,6 +88,8 @@ class MainViewModel(
 
     private val _mainPageEvents = Channel<MainPageEvents>()
     val mainPageEvents = _mainPageEvents.receiveAsFlow()
+
+    private var job: Job? = null
 
     //after MainPage is destroyed the Exoplayer is not needed anymore
     override fun onCleared() {
@@ -226,28 +229,33 @@ class MainViewModel(
     }
 
     private fun changeCoverPlaylist(embeddedUri: Uri) {
-        viewModelScope.launch {
-            val currentPlaylistName = _mainPageUiState.value.currentPlaylist.name
-            val changeCoverResult = playlistsWithSongsRepository.changeCover(
-                playlistName = currentPlaylistName,
-                embeddedUri = embeddedUri
-            )
-            when (changeCoverResult) {
-                is Result.Error -> {
-                    _mainPageEvents.send(MainPageEvents.ShowToast(message = changeCoverResult.exception))
-                }
+        if (job?.isActive == true) return
+        job = viewModelScope.launch {
+            try {
+                val currentPlaylistName = _mainPageUiState.value.currentPlaylist.name
+                val changeCoverResult = playlistsWithSongsRepository.changeCover(
+                    playlistName = currentPlaylistName,
+                    embeddedUri = embeddedUri
+                )
+                when (changeCoverResult) {
+                    is Result.Error -> {
+                        _mainPageEvents.send(MainPageEvents.ShowToast(message = changeCoverResult.exception))
+                    }
 
-                is Result.Success -> {
-                    //close bottom sheet and reset currentPlaylist
-                    onMenuDotsDismiss()
-                    _mainPageEvents.send(
-                        MainPageEvents.ShowToast(
-                            message = UiText.StringResource(
-                                R.string.successfully_changed_cover
+                    is Result.Success -> {
+                        //close bottom sheet and reset currentPlaylist
+                        onMenuDotsDismiss()
+                        _mainPageEvents.send(
+                            MainPageEvents.ShowToast(
+                                message = UiText.StringResource(
+                                    R.string.successfully_changed_cover
+                                )
                             )
                         )
-                    )
+                    }
                 }
+            } finally {
+                job = null
             }
         }
     }
