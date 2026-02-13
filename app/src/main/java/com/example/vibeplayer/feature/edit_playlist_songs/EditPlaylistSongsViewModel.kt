@@ -10,7 +10,6 @@ import com.example.vibeplayer.core.presentation.ui.UiText
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -23,6 +22,7 @@ sealed interface EditPlaylistSongsEvents {
 sealed interface EditPlaylistSongsActions {
     data class DeleteSong(val id: Int) : EditPlaylistSongsActions
     data object NavigateBack : EditPlaylistSongsActions
+    data object DeleteCoverPhoto : EditPlaylistSongsActions
 }
 
 class EditPlaylistSongsViewModel(
@@ -56,12 +56,13 @@ class EditPlaylistSongsViewModel(
             val playlistName = navKey.playlistName
             playlistsWithSongsRepository.getPlaylistByName(
                 playlistName = playlistName
-            ).map {
-                it.songs
-            }.collect { existingSongs ->
+            ).collect { playlistWithSongsDomain ->
                 _state.update { newState ->
                     newState.copy(
-                        existingSongs = existingSongs
+                        existingSongs = playlistWithSongsDomain.songs,
+                        playlistCoverPhoto = playlistWithSongsDomain.playlist.embeddedUri
+                            ?: playlistWithSongsDomain.songs.firstOrNull()?.embeddedArt,
+                        canDelete = playlistWithSongsDomain.playlist.embeddedUri != null
                     )
                 }
             }
@@ -72,12 +73,40 @@ class EditPlaylistSongsViewModel(
         when (actions) {
             is EditPlaylistSongsActions.DeleteSong -> deleteSong(id = actions.id)
             EditPlaylistSongsActions.NavigateBack -> navigateBack()
+            EditPlaylistSongsActions.DeleteCoverPhoto -> deleteCoverPhoto()
         }
     }
 
     private fun navigateBack() {
         viewModelScope.launch {
             _events.send(EditPlaylistSongsEvents.NavigateBack)
+        }
+    }
+
+    private fun deleteCoverPhoto() {
+        viewModelScope.launch {
+            val playlistId = _state.value.playlistId
+            val deleteCoverPhotoResult =
+                playlistsWithSongsRepository.deleteCoverPhoto(playlistId = playlistId)
+            when (deleteCoverPhotoResult) {
+                is Result.Error -> {
+                    _events.send(
+                        EditPlaylistSongsEvents.ShowToast(
+                            deleteCoverPhotoResult.exception
+                        )
+                    )
+                }
+
+                is Result.Success -> {
+                    _events.send(
+                        EditPlaylistSongsEvents.ShowToast(
+                            UiText.StringResource(
+                                R.string.cover_photo_delete
+                            )
+                        )
+                    )
+                }
+            }
         }
     }
 

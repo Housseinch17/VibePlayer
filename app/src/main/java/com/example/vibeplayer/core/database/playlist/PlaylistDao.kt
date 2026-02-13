@@ -25,6 +25,8 @@ interface PlaylistDao {
     @Upsert
     suspend fun renamePlaylistName(playlistEntity: PlaylistEntity)
 
+    @Query("UPDATE PlaylistEntity SET embeddedUri = NULL WHERE playlistId = :playlistId")
+    suspend fun deleteCoverPhotoById(playlistId: Int)
     @Upsert
     suspend fun changeCover(playlistEntity: PlaylistEntity)
 

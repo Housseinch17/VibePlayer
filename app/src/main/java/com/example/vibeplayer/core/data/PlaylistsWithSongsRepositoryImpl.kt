@@ -231,6 +231,18 @@ class PlaylistsWithSongsRepositoryImpl(
         }
     }
 
+    override suspend fun deleteCoverPhoto(playlistId: Int): Result<Unit> {
+        return try {
+            playlistDao.deleteCoverPhotoById(playlistId = playlistId)
+            Result.Success(Unit)
+        } catch (e: Exception) {
+            if (e is CancellationException) {
+                throw e
+            }
+            Result.Error(UiText.DynamicString(e.localizedMessage ?: ""))
+        }
+    }
+
     override suspend fun renamePlaylistName(
         playlistName: String,
         newPlaylistName: String

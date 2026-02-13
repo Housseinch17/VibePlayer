@@ -83,5 +83,7 @@ songs</string>
     <string name="existing_songs">Existing songs</string>
     <string name="song_deleted">Song deleted</string>
     <string name="edit_songs">Edit Songs</string>
+    <string name="cover_photo">Cover Photo</string>
+    <string name="cover_photo_delete">Cover photo deleted!</string>
 
 </resources>
