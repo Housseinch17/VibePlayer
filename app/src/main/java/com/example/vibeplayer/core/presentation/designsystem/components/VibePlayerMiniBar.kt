@@ -20,7 +20,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
@@ -58,7 +57,6 @@ fun VibePlayerMiniBar(
                 ambientColor = Color(0x0A131D4D),
                 spotColor = Color(0x0A131D4D)
             )
-            .blur(12.dp)
             .clickable(
                 onClick = {
                     onClick(song.id)
